@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 import time
+from datetime import datetime
 
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
@@ -44,6 +45,14 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
         margin-top: 0.2rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+
+    /* Testo Ultimo Refresh */
+    .refresh-text {
+        color: #aaaaaa;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
         margin-bottom: 0.8rem !important;
     }
     
@@ -140,6 +149,10 @@ def formatta_punteggio(row, col_s1, col_s2):
 @st.fragment(run_every=60)
 def rendering_applicazione():
     
+    # Visualizzazione dell'orario dell'ultimo refresh dati
+    orario_attuale = datetime.now().strftime("%H:%M:%S")
+    st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
+    
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
     # --- TAB 1: CALENDARIO ---
@@ -159,56 +172,49 @@ def rendering_applicazione():
             df_campo2_final = df_campo2[[0, 7, 8, 11, "Risultato"]].copy()
             df_campo2_final.columns = ["Orario", "Girone", "Squadra 1", "Squadra 2", "Risultato"]
             
-            with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 1", expanded=True):
+            with st.expander("🏟️ CAMPO MARE (1)", expanded=True):
                 st.dataframe(df_campo1_final, use_container_width=False, hide_index=True, column_config=config_colonne_campi)
                 
-            with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 2", expanded=False):
+            with st.expander("🏟️ CAMPO MONTE (2)", expanded=False):
                 st.dataframe(df_campo2_final, use_container_width=False, hide_index=True, column_config=config_colonne_campi)
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI (PARSING INTELLIGENTE DALLA A ALLA I) ---
+    # --- TAB 2: GIRONI (PARSING DALLA A ALLA I SENZA EMOJI) ---
     with tab2:
         st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
         
         if not df_gironi_raw.empty:
-            # Lista dei gironi ammessi da cercare nella prima colonna del foglio
             gironi_validi = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
             
             for i in range(len(df_gironi_raw)):
                 valore_cella = str(df_gironi_raw.iloc[i, 0]).strip()
                 
-                # Se la cella contiene esattamente una delle lettere dei nostri gironi
                 if valore_cella in gironi_validi:
                     nome_girone = valore_cella
                     
-                    # Estraiamo esattamente le 4 righe successive dedicate alle squadre del blocco
                     start_idx = i + 1
                     end_idx = min(start_idx + 4, len(df_gironi_raw))
                     
                     block = df_gironi_raw.iloc[start_idx:end_idx].copy()
                     
-                    # Se per qualche motivo il blocco non ha 8 colonne, lo forziamo per evitare eccezioni
                     if block.shape[1] >= 8:
                         block = block.iloc[:, 0:8]
                         block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
                         
-                        # Conversione e pulizia dati numerici
                         for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
                             block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
                         
-                        # Calcolo in tempo reale del Quoziente Punti (Quot. Punti)
                         block["Quoziente Punti"] = block.apply(
                             lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
                             axis=1
                         )
                         
-                        # Ordinamento ufficiale meritocratico: Score (Punti Totali) -> Vittorie -> Quoziente Punti
                         block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
                         
-                        # Rendering grafico della tabella pulita
-                        st.markdown(f"### 📊 GIRONE {nome_girone}")
+                        # Titolo pulito senza emoji come richiesto
+                        st.markdown(f"### GIRONE {nome_girone}")
                         st.dataframe(
                             block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
                             use_container_width=False,
