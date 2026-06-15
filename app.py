@@ -18,7 +18,7 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA, INTEGRAZIONE SFONDO E MASCHERA LOGO RITAGLIATO
+# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e NO BORDINI
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -39,55 +39,29 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Struttura Header con Logo e Titolo affiancati */
-    .header-container {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-top: 0rem !important;
-        margin-bottom: 0rem !important;
-        padding-top: 0.2rem !important;
+    /* Contenitore Logo Centrato/Allineato */
+    .logo-container {
+        display: block;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.5rem !important;
+        padding-top: 0rem !important;
     }
     
-    /* Maschera CSS per isolare e ritagliare il cerchio arancione della brochure */
-    .logo-ritagliato {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        object-fit: cover;
-        object-position: center;
-        transform: scale(1.65); /* Zoom per stringere solo sul cerchio arancione eliminando i bordi verdi */
-        display: inline-block;
+    /* Stile per il nuovo logo tondo grande */
+    .logo-grande {
+        max-width: 180px; /* Dimensione aumentata sostanzialmente */
+        height: auto;
+        display: block;
     }
     
-    .logo-box {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    /* Configurazione Titolo Principale (H1) */
-    h1 {
-        color: #fbb03f !important;
-        font-family: 'Poppins', sans-serif;
-        font-weight: 700;
-        margin: 0 !important;
-        line-height: 1.1 !important;
-        font-size: 2.2rem;
-    }
-    
-    /* Configurazione Sottotitolo (H2) */
+    /* Configurazione Sottotitolo unico (H2) */
     h2 {
         color: #7dcab2 !important;
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        margin-top: 0.2rem !important;
+        margin-top: 0rem !important;
         margin-bottom: 0.2rem !important;
+        font-size: 1.8rem;
     }
 
     /* Testo Ultimo Refresh */
@@ -156,23 +130,22 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- BARRA DEL TITOLO DINAMICA (CON O SENZA LOGO LOCALE) ---
+# --- RENDERING LOGO GRANDE ---
 if os.path.exists(logo_path):
     import base64
     with open(logo_path, "rb") as image_file:
         encoded_logo = base64.b64encode(image_file.read()).decode()
     
     st.markdown(f"""
-        <div class="header-container">
-            <div class="logo-box">
-                <img src="data:image/png;base64,{encoded_logo}" class="logo-ritagliato">
-            </div>
-            <h1>Baia Beach Cup 2026</h1>
+        <div class="logo-container">
+            <img src="data:image/png;base64,{encoded_logo}" class="logo-grande">
         </div>
     """, unsafe_allow_html=True)
 else:
-    st.markdown("<h1>🏐 Baia Beach Cup 2026</h1>", unsafe_allow_html=True)
+    # Fallback testuale se il logo non viene trovato nella cartella
+    st.markdown("<h2 style='color: #fbb03f !important;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
 
+# --- SOTTOTITOLO UNICO ---
 st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
@@ -211,7 +184,7 @@ def rendering_applicazione():
     
     fuso_roma = zoneinfo.ZoneInfo("Europe/Rome")
     orario_attuale = datetime.now(fuso_roma).strftime("%H:%M:%S")
-    st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='refresh-text'>Last update: {orario_attuale}</div>", unsafe_allow_html=True)
     
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
