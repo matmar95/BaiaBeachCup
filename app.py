@@ -32,17 +32,21 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Forza lo scrolling SOLO ORIZZONTALE sui frame */
+/* Contenitore del frame con altezza fissa e blocco verticale */
     .iframe-container {
         width: 100%;
-        overflow-x: auto;  /* Attiva lo scroll orizzontale se il contenuto esce */
-        overflow-y: hidden; /* Blocca totalmente lo scroll verticale */
+        height: 780px;      /* Altezza controllata del blocco */
+        overflow-x: auto;   /* Attiva SOLO lo scroll orizzontale */
+        overflow-y: hidden; /* Taglia e blocca lo scroll verticale */
         border-radius: 10px;
         border: 2px solid #fbb03f;
     }
     
+    /* Forza l'iframe interno a prendersi tutta l'altezza senza sbordare */
     .iframe-container iframe {
-        border: none !important; /* Rimuove il bordo interno dell'iframe */
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
         display: block;
     }
     </style>
@@ -89,9 +93,9 @@ with tab3:
     st.subheader("Tabellone ad Eliminazione")
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
     
-    # Avvolgiamo l'iframe nel container CSS personalizzato
+    # Il container CSS ora domina l'altezza e blocca l'asse Y
     st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
-    st.components.v1.iframe(embed_tabellone, height=800, scrolling=False)
+    st.components.v1.iframe(embed_tabellone, height=750, scrolling=False)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 4: RICERCA SQUADRA ---
