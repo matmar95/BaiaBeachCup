@@ -101,34 +101,53 @@ def carica_calendario(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- BARRA DEL TITOLO SENZA LOGO ---
+# --- BARRA DEL TITOLO ---
 st.markdown("<h1>🏐 Baia Beach Cup 2026</h1>", unsafe_allow_html=True)
 st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
-# ------------------------------------
 
 # Definizione dei Tab
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
-# --- TAB 1: CALENDARIO (Splittato su Campo 1 e Campo 2) ---
+# --- CONFIGURAZIONE LARGHEZZA COLONNE (Dizionario riutilizzabile) ---
+config_colonne_campi = {
+    "Orario": st.column_config.TextColumn("Orario", width="small"),
+    "Girone": st.column_config.TextColumn("Girone", width="small"),
+    "Squadra 1": st.column_config.TextColumn("Squadra 1", width="medium"),
+    "Set 1": st.column_config.TextColumn("Set 1", width="small"),
+    "Set 2": st.column_config.TextColumn("Set 2", width="small"),
+    "Squadra 2": st.column_config.TextColumn("Squadra 2", width="medium"),
+}
+
+# --- TAB 1: CALENDARIO ---
 with tab1:
     df_raw = carica_calendario("Calendario_gironi")
     
     if not df_raw.empty:
-        # Estrariamo e puliamo i dati per il CAMPO 1 (Colonne A, B, C, D, E, F)
+        # Estrazione dati CAMPO 1 (Colonne A, B, C, D, E, F)
         df_campo1 = df_raw[[0, 1, 2, 3, 4, 5]].dropna(subset=[0]).copy()
         df_campo1.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
         
-        # Estrariamo e puliamo i dati per il CAMPO 2 (Colonne A, H, I, J, K, L)
+        # Estrazione dati CAMPO 2 (Colonne A, H, I, J, K, L)
         df_campo2 = df_raw[[0, 7, 8, 9, 10, 11]].dropna(subset=[0]).copy()
         df_campo2.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
         
         # --- MENU A SCOMPARSA CAMPO 1 ---
         with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 1", expanded=True):
-            st.dataframe(df_campo1, use_container_width=True, hide_index=True)
+            st.dataframe(
+                df_campo1, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config=config_colonne_campi # Applica le colonne strette
+            )
             
         # --- MENU A SCOMPARSA CAMPO 2 ---
         with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 2", expanded=False):
-            st.dataframe(df_campo2, use_container_width=True, hide_index=True)
+            st.dataframe(
+                df_campo2, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config=config_colonne_campi # Applica le colonne strette
+            )
     else:
         st.info("Il calendario è in fase di compilazione. Torna a controllare più tardi!")
 
@@ -165,4 +184,14 @@ with tab4:
         if scelta:
             filtro = df_totale[(df_totale["Squadra 1"] == scelta) | (df_totale["Squadra 2"] == scelta)].sort_values(by="Orario")
             filtro = filtro[["Orario", "Campo", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]]
-            st.dataframe(filtro, use_container_width=True, hide_index=True)
+            
+            # Configurazione ad hoc per la ricerca (include anche la colonna Campo)
+            config_colonne_ricerca = config_colonne_campi.copy()
+            config_colonne_ricerca["Campo"] = st.column_config.TextColumn("Campo", width="small")
+            
+            st.dataframe(
+                filtro, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config=config_colonne_ricerca
+            )
