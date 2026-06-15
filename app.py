@@ -167,46 +167,46 @@ def rendering_applicazione():
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI (PARSING MAPPA RIGHE FISSE) ---
+    # --- TAB 2: GIRONI (PARSING MAPPA INDICI CORRETTI) ---
     with tab2:
         st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
         
         if not df_gironi_raw.empty:
-            # Definizione esatta delle coordinate del foglio Excel (0-indexed in Python)
-            # Riga 1 Excel = Indice 0, Riga 7 Excel = Indice 6, ecc.
+            # MAPPAZIONE MILLIMETRICA:
+            # Girone A -> Titolo riga 1 (0), squadre righe 2-5 (indici 1, 2, 3, 4 -> in Python slice 1:5)
+            # Girone B -> Titolo riga 7 (6), squadre righe 8-11 (indici 7, 8, 9, 10 -> in Python slice 7:11)
             mappa_gironi = [
-                {"riga_titolo": 0, "start_squadre": 1, "end_squadre": 5},   # Girone A (Righe 1, poi 2-5)
-                {"riga_titolo": 6, "start_squadre": 7, "end_squadre": 11},  # Girone B (Righe 7, poi 8-11)
-                {"riga_titolo": 12, "start_squadre": 13, "end_squadre": 17}, # Girone C (Righe 13, poi 14-17)
-                {"riga_titolo": 18, "start_squadre": 19, "end_squadre": 23}  # Girone D (Righe 19, poi 20-23)
+                {"riga_titolo": 0, "start_squadre": 1, "end_squadre": 5},   
+                {"riga_titolo": 6, "start_squadre": 7, "end_squadre": 11},  
+                {"riga_titolo": 12, "start_squadre": 13, "end_squadre": 17}, 
+                {"riga_titolo": 18, "start_squadre": 19, "end_squadre": 23}  
             ]
             
             for config in mappa_gironi:
-                # Controlliamo che il foglio contenga abbastanza righe per evitare crash accidentali
                 if len(df_gironi_raw) > config["riga_titolo"]:
                     nome_girone = df_gironi_raw.iloc[config["riga_titolo"], 0]
                     
-                    # Estraiamo esattamente le 4 righe delle squadre corrette
+                    # Estraiamo esattamente il blocco delle 4 righe delle squadre
                     block = df_gironi_raw.iloc[config["start_squadre"]:config["end_squadre"]].copy()
                     
-                    # Assegniamo i nomi alle colonne
+                    # Rinominiamo le colonne per l'elaborazione dati
                     block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
                     
                     # Conversione e pulizia dati numerici
                     for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
                         block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
                     
-                    # Calcolo automatico e in tempo reale del Points Quotient
+                    # Calcolo in tempo reale del Points Quotient
                     block["Quoziente Punti"] = block.apply(
                         lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
                         axis=1
                     )
                     
-                    # Ordinamento meritocratico: Score -> Vittorie -> Quoziente Punti
+                    # Ordinamento automatico: Punti Totali (Score) -> Vittorie -> Quoziente Punti
                     block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
                     
-                    # Render del blocco grafico su Streamlit
+                    # Rendering grafico del girone
                     st.markdown(f"### 📊 {str(nome_girone).upper()}")
                     st.dataframe(
                         block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
