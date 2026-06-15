@@ -8,7 +8,7 @@ import zoneinfo
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e INTEGRAZIONE SFONDO IFRAME
+# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e INTEGRAZIONE SFONDO #0d3c31
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -25,7 +25,7 @@ st.markdown("""
         padding-top: 0rem !important;
     }
     
-    .stApp { background-color: #2f0b3f; color: #ffffff; }
+    .stApp { background-color: #0d3c31; color: #ffffff; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
@@ -70,7 +70,7 @@ st.markdown("""
         overflow-y: hidden !important; 
         border-radius: 12px !important;            
         border: none !important; 
-        background-color: #2f0b3f !important;      
+        background-color: #0d3c31 !important;      
         padding: 4px !important;
         height: auto !important;
         scrollbar-width: none;            
@@ -89,13 +89,13 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* Adattamento colore di sfondo per l'iframe di Google Sheets per rimuovere il bianco */
+    /* Adattamento colore di sfondo per l'iframe di Google Sheets (tarato sullo sfondo verde petrolio) */
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
         border: none !important; 
-        background-color: #2f0b3f !important;
-        filter: invert(0.9) hue-rotate(180deg) brightness(1.1);
+        background-color: #0d3c31 !important;
+        filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1);
     }
     </style>
     """, unsafe_allow_html=True)
