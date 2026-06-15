@@ -92,7 +92,7 @@ with tab3:
     st.subheader("Tabellone ad Eliminazione")
     # Range impostato a S33 e altezza a 715 per tagliare il bianco
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S33&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=715, scrolling=False)
+    st.components.v1.iframe(embed_tabellone, height=690, scrolling=False)
 
 with tab4:
     st.subheader("Trova le tue Partite")
