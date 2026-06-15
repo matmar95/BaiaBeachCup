@@ -18,7 +18,7 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e Zoom Iframe all'80%
+# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e FIX Sfondi Iframe
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -47,11 +47,12 @@ st.markdown("""
         margin-top: 0.4rem !important;
         margin-bottom: 0.4rem !important;
         width: 100%;
+        background-color: transparent !important;
     }
     
-    /* Logo super compatto per mobile */
+    /* Logo rimpicciolito di un ulteriore 50% (da 75px a 38px) */
     .logo-grande {
-        max-width: 75px; 
+        max-width: 38px; 
         height: auto;
         display: block;
     }
@@ -64,8 +65,8 @@ st.markdown("""
         text-align: center;
         margin-top: 0rem !important;
         margin-bottom: 0.6rem !important;
-        font-size: 1.4rem; /* Dimensione ottimizzata per far stare tutto su una riga su mobile */
-        white-space: nowrap; /* Evita di andare a capo */
+        font-size: 1.4rem; 
+        white-space: nowrap; 
         width: 100%;
     }
 
@@ -102,7 +103,7 @@ st.markdown("""
     /* Stile per gli Expander */
     .stDecoration { background-color: #fbb03f !important; }
     
-    /* --- COPERTURA PER IFRAME E ZOOM RIDOTTO ALL'80% --- */
+    /* --- EMISSIONE FIX SFONDO BIANCO E SPAZI IFRAME --- */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
@@ -116,9 +117,11 @@ st.markdown("""
         -ms-overflow-style: none;         
     }
     
-    .element-container:has(iframe) {
+    /* Forza lo sfondo scuro su tutto il blocco nativo Streamlit per evitare il bianco allo scroll */
+    .element-container, .element-container:has(iframe), [data-testid="stHtml"] div {
         border-radius: 12px !important;
         overflow: hidden !important;
+        background-color: #0d3c31 !important;
     }
 
     [data-testid="stHtml"]::-webkit-scrollbar {
@@ -128,7 +131,7 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* Riduzione del contenuto dell'iframe all'80% con compensazione della larghezza */
+    /* Fix definitivo per l'adattamento visivo ed eliminazione bande bianche */
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
@@ -136,11 +139,12 @@ st.markdown("""
         background-color: #0d3c31 !important;
         filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1);
         
-        /* Logica di Zoom rimpicciolito */
-        transform: scale(0.80);
-        transform-origin: top left;
-        width: 125% !important; /* Compensa la riduzione dell'80% (100 / 0.8) */
-        height: 912px !important; /* Compensa l'altezza proporzionalmente (730 / 0.8) */
+        /* Ottimizzazione zoom senza sgranare o lasciare vuoti */
+        zoom: 0.85; 
+        -moz-transform: scale(0.85);
+        -moz-transform-origin: 0 0;
+        width: 118% !important; 
+        height: 860px !important; 
     }
     </style>
     """, unsafe_allow_html=True)
@@ -160,7 +164,7 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING LOGO COMPATTO CENTRATO ---
+# --- RENDERING LOGO SUPER COMPATTO CENTRATO ---
 if os.path.exists(logo_path):
     import base64
     with open(logo_path, "rb") as image_file:
@@ -174,7 +178,7 @@ if os.path.exists(logo_path):
 else:
     st.markdown("<h2 style='text-align: center;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
 
-# --- SOTTOTITOLO SU UNA RIGA ---
+# --- SOTTOTITOLO SU UNA RIGA GIALLO ---
 st.markdown("<h2>Baia Beach Cup - 2x2 Maschile</h2>", unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
@@ -207,7 +211,7 @@ def formatta_punteggio(row, col_s1, col_s2):
         return f"{s1}-{s2}"
     return "-"
 
-# --- LOGICA DI REFRESH AUTOMATICO (Ogni 60 secondi) ---
+# --- LOGICA DI REFRESH AUTOMATICO ---
 @st.fragment(run_every=60)
 def rendering_applicazione():
     
