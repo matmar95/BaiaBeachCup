@@ -8,7 +8,7 @@ import zoneinfo
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e NO FRAME INTORNO ALLE TABELLE
+# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e INTEGRAZIONE SFONDO IFRAME
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -63,13 +63,13 @@ st.markdown("""
     /* Stile per gli Expander */
     .stDecoration { background-color: #fbb03f !important; }
     
-    /* --- COPERTURA PER IFRAME E TABELLONI (FRAME RIMOSSO) --- */
+    /* --- COPERTURA PER IFRAME E TABELLONI --- */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
         overflow-y: hidden !important; 
         border-radius: 12px !important;            
-        border: none !important; /* Rimosso il bordo giallo fastidioso */
+        border: none !important; 
         background-color: #2f0b3f !important;      
         padding: 4px !important;
         height: auto !important;
@@ -89,10 +89,13 @@ st.markdown("""
         background: transparent !important;
     }
 
+    /* Adattamento colore di sfondo per l'iframe di Google Sheets per rimuovere il bianco */
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
         border: none !important; 
+        background-color: #2f0b3f !important;
+        filter: invert(0.9) hue-rotate(180deg) brightness(1.1);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -174,17 +177,16 @@ def rendering_applicazione():
             df_campo2_final = df_campo2[[0, 7, 8, 11, "Risultato"]].copy()
             df_campo2_final.columns = ["Orario", "Girone", "Squadra 1", "Squadra 2", "Risultato"]
             
-            with st.expander("🏟️ CAMPO MARE (1)", expanded=True):
+            with st.expander("CAMPO MARE (1)", expanded=True):
                 st.dataframe(df_campo1_final, use_container_width=False, hide_index=True, column_config=config_colonne_campi)
                 
-            with st.expander("🏟️ CAMPO MONTE (2)", expanded=False):
+            with st.expander("CAMPO MONTE (2)", expanded=False):
                 st.dataframe(df_campo2_final, use_container_width=False, hide_index=True, column_config=config_colonne_campi)
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI (PARSING DINAMICO A-I) ---
+    # --- TAB 2: GIRONI ---
     with tab2:
-        st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
         
         if not df_gironi_raw.empty:
@@ -227,14 +229,12 @@ def rendering_applicazione():
 
     # --- TAB 3: FASI FINALI ---
     with tab3:
-        st.subheader("Tabellone ad Eliminazione")
         timestamp_cache = int(time.time())
         embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S35&widget=false&chrome=false&headers=false&rm=minimal&cb={timestamp_cache}"
         st.components.v1.iframe(embed_tabellone, height=730, scrolling=False)
 
     # --- TAB 4: RICERCA SQUADRA ---
     with tab4:
-        st.subheader("Trova le tue Partite")
         df_partite = carica_dati_csv("Calendario_gironi")
         if not df_partite.empty:
             if "orario" in str(df_partite.iloc[0, 0]).lower():
