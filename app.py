@@ -18,7 +18,7 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e Colori Tab
+# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e Zoom Iframe all'80%
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -49,22 +49,23 @@ st.markdown("""
         width: 100%;
     }
     
-    /* Dimensione ottimizzata per smartphone */
+    /* Logo super compatto per mobile */
     .logo-grande {
-        max-width: 110px; 
+        max-width: 75px; 
         height: auto;
         display: block;
     }
     
-    /* Configurazione Sottotitolo Giallo e Centrato */
+    /* Configurazione Titolo Giallo, Centrato e su una sola riga */
     h2 {
-        color: #fbb03f !important; /* Diventato Giallo */
+        color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        text-align: center; /* Centrato */
+        text-align: center;
         margin-top: 0rem !important;
         margin-bottom: 0.6rem !important;
-        font-size: 1.6rem;
+        font-size: 1.4rem; /* Dimensione ottimizzata per far stare tutto su una riga su mobile */
+        white-space: nowrap; /* Evita di andare a capo */
         width: 100%;
     }
 
@@ -80,20 +81,19 @@ st.markdown("""
     
     h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; margin-bottom: 0.4rem !important;}
     
-    /* --- STILE TAB STREAMLIT CON EVIDENZIAZIONE IN GIALLO --- */
+    /* --- STILE TAB STREAMLIT --- */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        justify-content: space-between; /* Ottimizza lo spazio su mobile */
+        justify-content: space-between;
     }
 
     .stTabs [data-baseweb="tab"] {
-        font-size: 15px !important; /* Leggermente più piccolo per non andare a capo su mobile */
+        font-size: 15px !important;
         font-weight: bold !important;
-        color: #aaaaaa !important; /* Colore tab spenti */
+        color: #aaaaaa !important;
         padding: 8px 10px !important;
     }
 
-    /* Tab Selezionato (Testo Giallo e Linea Sotto Gialla) */
     .stTabs [aria-selected="true"] {
         color: #fbb03f !important;
         border-bottom-color: #fbb03f !important;
@@ -102,7 +102,7 @@ st.markdown("""
     /* Stile per gli Expander */
     .stDecoration { background-color: #fbb03f !important; }
     
-    /* --- COPERTURA PER IFRAME E TABELLONI --- */
+    /* --- COPERTURA PER IFRAME E ZOOM RIDOTTO ALL'80% --- */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
@@ -128,13 +128,19 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* Adattamento colore di sfondo per l'iframe di Google Sheets */
+    /* Riduzione del contenuto dell'iframe all'80% con compensazione della larghezza */
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
         border: none !important; 
         background-color: #0d3c31 !important;
         filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1);
+        
+        /* Logica di Zoom rimpicciolito */
+        transform: scale(0.80);
+        transform-origin: top left;
+        width: 125% !important; /* Compensa la riduzione dell'80% (100 / 0.8) */
+        height: 912px !important; /* Compensa l'altezza proporzionalmente (730 / 0.8) */
     }
     </style>
     """, unsafe_allow_html=True)
@@ -154,7 +160,7 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING LOGO CENTRATO ---
+# --- RENDERING LOGO COMPATTO CENTRATO ---
 if os.path.exists(logo_path):
     import base64
     with open(logo_path, "rb") as image_file:
@@ -168,8 +174,8 @@ if os.path.exists(logo_path):
 else:
     st.markdown("<h2 style='text-align: center;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
 
-# --- SOTTOTITOLO GIALLO E CENTRATO ---
-st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
+# --- SOTTOTITOLO SU UNA RIGA ---
+st.markdown("<h2>Baia Beach Cup - 2x2 Maschile</h2>", unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
 config_colonne_campi = {
