@@ -91,7 +91,7 @@ with tab3:
     
     # Avvolgiamo l'iframe nel container CSS personalizzato
     st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
-    st.components.v1.iframe(embed_tabellone, height=750, scrolling=False)
+    st.components.v1.iframe(embed_tabellone, height=800, scrolling=False)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 4: RICERCA SQUADRA ---
