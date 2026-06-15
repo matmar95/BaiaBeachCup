@@ -52,8 +52,7 @@ st.markdown("""
     
     /* Logo rimpicciolito di un ulteriore 50% (da 75px a 38px) */
     .logo-grande {
-        max-width: 38px; 
-        height: auto;
+        max-width: 20px; 
         display: block;
     }
     
@@ -217,7 +216,7 @@ def rendering_applicazione():
     
     fuso_roma = zoneinfo.ZoneInfo("Europe/Rome")
     orario_attuale = datetime.now(fuso_roma).strftime("%H:%M:%S")
-    st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='refresh-text'>🔄 Last update: {orario_attuale}</div>", unsafe_allow_html=True)
     
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
