@@ -5,20 +5,26 @@ import urllib.parse
 # 1. Configurazione Pagina Originale
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Aggiornato: Rimosso lo spazio vuoto in cima alla pagina
+# 2. CSS BLINDATO: Pialliamo lo spazio in cima e fissiamo i bordi gialli
 st.markdown("""
     <style>
-    /* --- FIX: RIMOZIONE SPAZIO VUOTO IN CIMA --- */
-    .block-container {
-        padding-top: 1rem !important;    /* Riduce drasticamente lo spazio superiore */
-        padding-bottom: 0rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+    /* 1. AZZERAMENTO TOTALE DELLO SPAZIO IN CIMA (Tutti i possibili contenitori) */
+    header {
+        display: none !important;
+        height: 0px !important;
     }
     
-    /* Rimuove l'ulteriore margine inserito dal container dei widget */
-    [data-testid="stVerticalBlock"] {
-        gap: 0rem !important;
+    .main .block-container {
+        padding-top: 0.5rem !important;    /* Spazio minimo dal bordo superiore del browser */
+        padding-bottom: 0rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+    
+    /* Rimuove i margini verticali strutturali di Streamlit in cima */
+    [data-testid="stVerticalBlock"] > div:first-child {
+        margin-top: 0rem !important;
+        padding-top: 0rem !important;
     }
     
     /* Sfondo principale dell'app */
@@ -27,37 +33,43 @@ st.markdown("""
         color: #ffffff;
     }
     
-    /* Nasconde menu e footer di default per un look pulito */
+    /* Nasconde il menu a tre puntini nativo se ancora visibile */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
     
-    /* Colori puliti per Titoli e scritte dei Tab superiori */
+    /* Forzatura sul Titolo Principale per farlo stare in cima */
     h1 {
         color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
-        margin-top: 0rem !important; /* Forza il titolo a non avere margini sopra */
+        margin-top: 0rem !important;
         padding-top: 0rem !important;
+        margin-bottom: 0.5rem !important;
     }
+    
     h2, h3, h4 {
         color: #7dcab2 !important;
         font-family: 'Poppins', sans-serif;
     }
+    
     .stTabs [data-baseweb="tab-list"] button {
         font-size: 18px;
         font-weight: bold;
     }
     
-    /* Container nativo di Streamlit che avvolge l'iframe */
-    [data-testid="stHtml"] {
+    /* 2. FIX BORDO GIALLO E SCROLL ORIZZONTALE */
+    /* Colpiamo sia l'elemento html nativo che il wrapper per sicurezza */
+    [data-testid="stHtml"], .element-container iframe {
         width: 100% !important;
-        overflow-x: auto !important;   /* Attiva swipe orizzontale */
-        overflow-y: hidden !important;  /* Blocca totalmente lo scroll verticale interno */
+    }
+
+    [data-testid="stHtml"] {
+        overflow-x: auto !important;    /* Solo scroll orizzontale */
+        overflow-y: hidden !important;   /* Blocca il verticale */
         border-radius: 12px;            
-        border: 2px solid #fbb03f !important; 
+        border: 2px solid #fbb03f !important; /* Forza il bordo giallo */
         background-color: #2f0b3f;      
-        padding: 5px;                  
+        padding: 4px;                  
     }
 
     [data-testid="stHtml"] iframe {
