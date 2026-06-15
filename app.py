@@ -1,47 +1,85 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse
 
-# Configurazione iniziale della pagina sportiva
+# 1. Configurazione Pagina e Rimozione Icone/Footer
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-st.title("🏐 Baia Beach Cup 2026 - Risultati Live")
+# CSS per nascondere il menu (hamburger) e il footer "Made with Streamlit"
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            /* Rende i tab più grandi e leggibili su mobile */
+            .stTabs [data-baseweb="tab-list"] button {
+                font-size: 20px;
+                font-weight: bold;
+            }
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# ID del tuo foglio Google ricavato dal tuo URL
+# 2. Parametri Google Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
 
-# Funzione per leggere i gironi convertendo al volo il foglio in CSV
-@st.cache_data(ttl=15) # Aggiorna i dati ogni 15 secondi automaticamente
-def carica_gironi():
-    # GID 1130118483 corrisponde alla tab dei Gironi
-    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=1130118483"
+@st.cache_data(ttl=15)
+def carica_foglio(nome_foglio):
+    nome_encoded = urllib.parse.quote(nome_foglio)
+    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={nome_encoded}"
     try:
-        df = pd.read_csv(url)
-        return df
-    except Exception as e:
-        st.error(f"Errore nel recupero dati: {e}")
-        return None
+        return pd.read_csv(url)
+    except:
+        return pd.DataFrame()
 
-# Menu di Navigazione
-scelta = st.sidebar.radio("Navigazione Torneo:", ["Gironi & Classifiche", "Fasi Finali (Tabellone)"])
+# 3. Titolo Principale
+st.title("🏐 Baia Beach Cup 2026")
 
-if scelta == "Gironi & Classifiche":
-    st.header("🏆 Situazione Gironi")
-    st.write("I dati si aggiornano automaticamente ogni 15 secondi.")
-    
-    df_gironi = carica_gironi()
-    
-    if df_gironi is not None:
-        # Mostriamo l'intera tabella strutturata dei gironi
-        # Streamlit la formatterà in modo pulito e scorrevole
+# 4. Creazione dei Tab
+tab1, tab2, tab3, tab4 = st.tabs(["📅 Calendario", "📊 Gironi", "🏆 Fasi Finali", "🔍 Partite Squadra"])
+
+# --- TAB 1: CALENDARIO ---
+with tab1:
+    st.header("Calendario Completo")
+    df_cal = carica_foglio("Calendario_gironi") # Assicurati che il nome sia corretto
+    if not df_cal.empty:
+        st.dataframe(df_cal, use_container_width=True, hide_index=True)
+    else:
+        st.info("Calendario in fase di caricamento...")
+
+# --- TAB 2: GIRONI ---
+with tab2:
+    st.header("Classifiche Gironi")
+    df_gironi = carica_foglio("Gironi")
+    if not df_gironi.empty:
         st.dataframe(df_gironi, use_container_width=True, hide_index=True)
+    else:
+        st.info("I gironi verranno pubblicati a breve.")
 
-elif scelta == "Fasi Finali (Tabellone)":
-    st.header("🌳 Tabellone Ad Eliminazione Diretta")
-    st.write("Visualizzazione in tempo reale dal centro della regia:")
+# --- TAB 3: FASI FINALI ---
+with tab3:
+    st.header("Tabellone ad Eliminazione Diretta")
+    nome_finali_encoded = urllib.parse.quote("Tabellone Finali")
+    embed_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?sheet={nome_finali_encoded}&widget=false&chrome=false&rm=minimal"
+    st.components.v1.iframe(embed_url, height=800, scrolling=True)
+
+# --- TAB 4: LISTA PARTITE PER SQUADRA ---
+with tab4:
+    st.header("Cerca le tue partite")
+    df_partite = carica_foglio("Calendario_gironi")
     
-    # TRUCCO: Invece di ricostruire la grafica in Python, incorporiamo il foglio Google 
-    # focalizzato esattamente sulla porzione del Tabellone Finali.
-    # Usiamo un iframe HTML per mostrare in tempo reale la tua struttura ad albero.
-    embed_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid=1130118483&widget=false&chrome=false"
-    
-    st.components.v1.iframe(embed_url, height=600, scrolling=True)
+    if not df_partite.empty:
+        # Cerchiamo di capire quali colonne contengono i nomi delle squadre (es. 'Squadra 1', 'Squadra 2')
+        # Modifica i nomi qui sotto se nel tuo foglio si chiamano diversamente
+        col_s1 = "Squadra 1" 
+        col_s2 = "Squadra 2"
+        
+        if col_s1 in df_partite.columns and col_s2 in df_partite.columns:
+            elenco_squadre = sorted(list(set(df_partite[col_s1].dropna().unique()) | set(df_partite[col_s2].dropna().unique())))
+            squadra_scelta = st.selectbox("Seleziona la tua squadra:", [""] + elenco_squadre)
+            
+            if squadra_scelta:
+                filtro = df_partite[(df_partite[col_s1] == squadra_scelta) | (df_partite[col_s2] == squadra_scelta)]
+                st.table(filtro)
+        else:
+            st.warning("Verifica che le colonne 'Squadra 1' e 'Squadra 2' siano presenti nel foglio Calendario.")
