@@ -5,7 +5,7 @@ import urllib.parse
 # 1. Configurazione Pagina Originale
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS con blocco dello scrolling verticale sui frame
+# 2. CSS Mirato sui selettori nativi di Streamlit
 st.markdown("""
     <style>
     /* Sfondo principale dell'app */
@@ -32,22 +32,20 @@ st.markdown("""
         font-weight: bold;
     }
     
-/* Contenitore del frame con altezza fissa e blocco verticale */
-    .iframe-container {
-        width: 100%;
-        height: 950px;      /* Altezza controllata del blocco */
-        overflow-x: auto;   /* Attiva SOLO lo scroll orizzontale */
-        overflow-y: hidden; /* Taglia e blocca lo scroll verticale */
+    /* INTERCETTIAMO IL COMPONENTE IFRAME NATIVO DI STREAMLIT */
+    /* Applichiamo il bordo giallo e lo scroll orizzontale bloccando l'Y */
+    [data-testid="stHtml"] {
+        width: 100% !important;
+        overflow-x: auto !important;   /* Attiva swipe orizzontale */
+        overflow-y: hidden !important;  /* Blocca totalmente lo scroll verticale */
         border-radius: 10px;
         border: 2px solid #fbb03f;
+        background-color: #2f0b3f;
     }
-    
-    /* Forza l'iframe interno a prendersi tutta l'altezza senza sbordare */
-    .iframe-container iframe {
-        width: 100% !important;
-        height: 100% !important;
-        border: none !important;
+
+    [data-testid="stHtml"] iframe {
         display: block;
+        vertical-align: bottom;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -78,24 +76,21 @@ with tab1:
     if not df_cal.empty:
         st.dataframe(df_cal, use_container_width=True, hide_index=True)
 
-# --- TAB 2: GIRONI (Con Scroll Solo Orizzontale) ---
+# --- TAB 2: GIRONI ---
 with tab2:
     st.subheader("Situazione Gironi")
     embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V32&widget=false&chrome=false&headers=false&rm=minimal"
     
-    # Avvolgiamo l'iframe nel container CSS personalizzato
-    st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
-    st.components.v1.iframe(embed_gironi, height=680, scrolling=False)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Rimosso il div manuale, usiamo solo il componente nativo
+    st.components.v1.iframe(embed_gironi, height=850, scrolling=False)
 
-# --- TAB 3: FASI FINALI (Con Scroll Solo Orizzontale) ---
+# --- TAB 3: FASI FINALI ---
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
     
-    st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
-    st.components.v1.iframe(embed_tabellone, height=900, scrolling=False) # <--- Portato a 900
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Rimosso il div manuale, usiamo solo il componente nativo
+    st.components.v1.iframe(embed_tabellone, height=850, scrolling=False)
 
 # --- TAB 4: RICERCA SQUADRA ---
 with tab4:
