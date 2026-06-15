@@ -4,11 +4,21 @@ import urllib.parse
 import time
 from datetime import datetime
 import zoneinfo
+import os
+from PIL import Image
 
-# 1. Configurazione Pagina
-st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
+# 1. Configurazione Pagina (Caricamento Logo come Favicon se presente)
+logo_path = "logo.png"
+if os.path.exists(logo_path):
+    try:
+        img_logo = Image.open(logo_path)
+        st.set_page_config(page_title="Baia Beach Cup 2026", page_icon=img_logo, layout="wide")
+    except:
+        st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
+else:
+    st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e INTEGRAZIONE SFONDO #0d3c31
+# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA, INTEGRAZIONE SFONDO E MASCHERA LOGO RITAGLIATO
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -29,15 +39,46 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
+    /* Struttura Header con Logo e Titolo affiancati */
+    .header-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 0rem !important;
+        margin-bottom: 0rem !important;
+        padding-top: 0.2rem !important;
+    }
+    
+    /* Maschera CSS per isolare e ritagliare il cerchio arancione della brochure */
+    .logo-ritagliato {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: center;
+        transform: scale(1.65); /* Zoom per stringere solo sul cerchio arancione eliminando i bordi verdi */
+        display: inline-block;
+    }
+    
+    .logo-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
     /* Configurazione Titolo Principale (H1) */
     h1 {
         color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
-        margin-top: 0rem !important;
-        margin-bottom: 0rem !important;
-        padding-top: 0.2rem !important;
+        margin: 0 !important;
         line-height: 1.1 !important;
+        font-size: 2.2rem;
     }
     
     /* Configurazione Sottotitolo (H2) */
@@ -89,7 +130,7 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* Adattamento colore di sfondo per l'iframe di Google Sheets (tarato sullo sfondo verde petrolio) */
+    /* Adattamento colore di sfondo per l'iframe di Google Sheets */
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
@@ -115,8 +156,23 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- BARRA DEL TITOLO ---
-st.markdown("<h1>🏐 Baia Beach Cup 2026</h1>", unsafe_allow_html=True)
+# --- BARRA DEL TITOLO DINAMICA (CON O SENZA LOGO LOCALE) ---
+if os.path.exists(logo_path):
+    import base64
+    with open(logo_path, "rb") as image_file:
+        encoded_logo = base64.b64encode(image_file.read()).decode()
+    
+    st.markdown(f"""
+        <div class="header-container">
+            <div class="logo-box">
+                <img src="data:image/png;base64,{encoded_logo}" class="logo-ritagliato">
+            </div>
+            <h1>Baia Beach Cup 2026</h1>
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("<h1>🏐 Baia Beach Cup 2026</h1>", unsafe_allow_html=True)
+
 st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
@@ -153,7 +209,6 @@ def formatta_punteggio(row, col_s1, col_s2):
 @st.fragment(run_every=60)
 def rendering_applicazione():
     
-    # Visualizzazione dell'orario con Timezone Roma bloccata
     fuso_roma = zoneinfo.ZoneInfo("Europe/Rome")
     orario_attuale = datetime.now(fuso_roma).strftime("%H:%M:%S")
     st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
