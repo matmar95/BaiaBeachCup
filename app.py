@@ -5,7 +5,7 @@ import urllib.parse
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. Iniezione CSS Personalizzato con la tua Palette Colori
+# 2. Iniezione CSS Personalizzato
 st.markdown("""
     <style>
     /* Sfondo principale dell'app */
@@ -19,7 +19,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Personalizzazione dei Titoli e Sottotitoli nativi */
+    /* Personalizzazione dei Titoli e Sottotitoli */
     h1 {
         color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
@@ -42,7 +42,7 @@ st.markdown("""
         padding: 10px 0;
     }
     .stTabs [data-baseweb="tab-list"] button {
-        background-color: #1a0526; /* Viola ancora più scuro per i tab inattivi */
+        background-color: #1a0526;
         border: 1px solid #fbb03f;
         border-radius: 8px 8px 0px 0px;
         padding: 12px 24px;
@@ -64,22 +64,26 @@ st.markdown("""
         background-color: #2f0b3f;
     }
 
-    /* SOVRASCRITTURA TABELLE VEGA-LITE (Streamlit Dataframe) */
-    /* Sfondo delle celle e contorni */
+    /* SOVRASCRITTURA TABELLE (Streamlit Dataframe) -> ORA GIALLINE */
     [data-testid="stDataFrame"] div {
-        background-color: #2f0b3f !important;
+        background-color: #fbb03f !important;
     }
     /* Intestazione Tabella (Menta) */
     [data-testid="stDataFrame"] th {
         background-color: #7dcab2 !important;
         color: #2f0b3f !important;
         font-weight: bold;
+        border: 1px solid #2f0b3f !important;
     }
-    /* Righe della tabella */
+    /* Righe della tabella (Sfondo giallino, testo viola, bordi viola) */
     [data-testid="stDataFrame"] td {
-        background-color: #2f0b3f !important;
-        color: #ffffff !important;
-        border: 1px solid #fbb03f !important;
+        background-color: #fbb03f !important;
+        color: #2f0b3f !important;
+        border: 1px solid #2f0b3f !important;
+    }
+    /* Forza il testo generico all'interno del dataframe ad essere scuro sul giallino */
+    [data-testid="stDataFrame"] div div {
+        color: #2f0b3f !important;
     }
     </style>
     """, unsafe_allow_html=True)
