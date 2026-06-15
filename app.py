@@ -58,10 +58,13 @@ with tab2:
 
 # --- TAB 3: FASI FINALI ---
 with tab3:
-    st.header("Tabellone ad Eliminazione Diretta")
-    nome_finali_encoded = urllib.parse.quote("Tabellone Finali")
-    embed_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?sheet={nome_finali_encoded}&widget=false&chrome=false&rm=minimal"
-    st.components.v1.iframe(embed_url, height=800, scrolling=True)
+    st.header("Tabellone Fasi Finali")
+    #nome_finali_encoded = urllib.parse.quote("Tabellone Finali")
+    GID_TABELLONE = "1130118483"
+
+    embed_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S40&widget=false&chrome=false&headers=false&rm=minimal"
+    
+    st.components.v1.iframe(embed_url, height=900, scrolling=True)
 
 # --- TAB 4: LISTA PARTITE PER SQUADRA ---
 with tab4:
