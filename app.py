@@ -5,50 +5,89 @@ import urllib.parse
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. Personalizzazione Estetica (Sfondo e Tab)
+# 2. Iniezione CSS Personalizzato con la tua Palette Colori
 st.markdown("""
     <style>
-    /* Cambia lo sfondo di tutta l'app (Colore Sabbia Chiarissimo) */
+    /* Sfondo principale dell'app */
     .stApp {
-        background-color: #fdf5e6; 
+        background-color: #2f0b3f;
+        color: #ffffff;
     }
     
-    /* Se vuoi un'immagine di sfondo, usa questa riga invece di quella sopra:
-    .stApp {
-        background-image: url("https://www.transparenttextures.com/patterns/sandpaper.png");
-    } */
-
-    /* Nasconde menu e footer */
+    /* Nasconde menu e footer Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Migliora l'estetica dei Tab */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+    /* Personalizzazione dei Titoli e Sottotitoli nativi */
+    h1 {
+        color: #fbb03f !important;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
     }
-    .stTabs [data-baseweb="tab-list"] button {
-        background-color: #ffffff;
-        border-radius: 10px 10px 0px 0px;
-        padding: 10px 20px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #5d4037;
+    h2, h3, h4 {
+        color: #7dcab2 !important;
+        font-family: 'Poppins', sans-serif;
     }
     
-    /* Riquadro per gli iframe */
+    /* Testo dei widget (es. selectbox) */
+    .stSelectbox label p {
+        color: #7dcab2 !important;
+    }
+    
+    /* Stile dei TAB superiori */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #2f0b3f;
+        padding: 10px 0;
+    }
+    .stTabs [data-baseweb="tab-list"] button {
+        background-color: #1a0526; /* Viola ancora più scuro per i tab inattivi */
+        border: 1px solid #fbb03f;
+        border-radius: 8px 8px 0px 0px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #7dcab2 !important;
+    }
+    /* Tab attivo */
+    .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {
+        background-color: #2f0b3f !important;
+        color: #fbb03f !important;
+        border-bottom: 2px solid #2f0b3f !important;
+    }
+
+    /* Stile IFRAME (Gironi e Tabellone) */
     iframe {
-        border-radius: 15px;
-        border: 2px solid #e8d5b5;
-        background-color: white;
+        border-radius: 12px;
+        border: 3px solid #fbb03f !important;
+        background-color: #2f0b3f;
+    }
+
+    /* SOVRASCRITTURA TABELLE VEGA-LITE (Streamlit Dataframe) */
+    /* Sfondo delle celle e contorni */
+    [data-testid="stDataFrame"] div {
+        background-color: #2f0b3f !important;
+    }
+    /* Intestazione Tabella (Menta) */
+    [data-testid="stDataFrame"] th {
+        background-color: #7dcab2 !important;
+        color: #2f0b3f !important;
+        font-weight: bold;
+    }
+    /* Righe della tabella */
+    [data-testid="stDataFrame"] td {
+        background-color: #2f0b3f !important;
+        color: #ffffff !important;
+        border: 1px solid #fbb03f !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # Parametri Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
-GID_GIRONI = "1130118483"      # GID Gironi
-GID_TABELLONE = "378239650"    # GID Tabellone Finali
+GID_GIRONI = "1130118483"      
+GID_TABELLONE = "378239650"    
 
 @st.cache_data(ttl=15)
 def carica_calendario(nome_foglio):
@@ -59,6 +98,7 @@ def carica_calendario(nome_foglio):
     except:
         return pd.DataFrame()
 
+# Titolo Principale (diventerà #fbb03f)
 st.title("🏐 Baia Beach Cup 2026")
 
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
@@ -71,15 +111,15 @@ with tab1:
 
 with tab2:
     st.subheader("Situazione Gironi")
-    # RIDUZIONE FRAME: Ho limitato il range a A1:V35 per togliere il vuoto sotto
-    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V35&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_gironi, height=700, scrolling=True)
+    # Ridotto a A1:V32 per stringere il frame ed evitare scrolling vuoto
+    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V32&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_gironi, height=680, scrolling=True)
 
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
-    # RIDUZIONE FRAME: Qui usiamo il range A1:S35 per focalizzare il tabellone grafico
-    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S35&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=800, scrolling=True)
+    # Ridotto a A1:S32 per tagliare le righe vuote del tabellone
+    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_tabellone, height=750, scrolling=True)
 
 with tab4:
     st.subheader("Trova le tue Partite")
@@ -88,7 +128,7 @@ with tab4:
         col1, col2 = "Squadra 1", "Squadra 2"
         if col1 in df_partite.columns:
             squadre = sorted(list(set(df_partite[col1].dropna().unique()) | set(df_partite[col2].dropna().unique())))
-            scelta = st.selectbox("Seleziona Squadra:", [""] + squadre)
+            scelta = st.selectbox("Seleziona la tua Squadra:", [""] + squadre)
             if scelta:
                 filtro = df_partite[(df_partite[col1] == scelta) | (df_partite[col2] == scelta)]
                 st.dataframe(filtro, use_container_width=True, hide_index=True)
