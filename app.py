@@ -26,39 +26,51 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
+    /* Configurazione Titolo Principale (H1) */
     h1 {
         color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
         margin-top: 0rem !important;
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0rem !important;
+        padding-top: 0.2rem !important;
+        line-height: 1.1 !important;
     }
     
-    h2, h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; }
+    /* Configurazione Sottotitolo (H2) */
+    h2 {
+        color: #7dcab2 !important;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+    
+    h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; }
     .stTabs [data-baseweb="tab-list"] button { font-size: 18px; font-weight: bold; }
     
-    /* --- COPERTURA TOTALE PER IL BORDO GIALLO --- */
-    /* Forza il bordo sul blocco di testo/html nativo di Streamlit */
+    /* Stile per gli Expander (Menu a scomparsa del Calendario) */
+    .stDecoration { background-color: #fbb03f !important; }
+    
+    /* --- COPERTURA TOTALE PER IL BORDO GIALLO DEI TABELLONI --- */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
         overflow-y: hidden !important; 
         border-radius: 12px !important;            
-        border: 2px solid #fbb03f !important; /* Bordo Giallo Principale */
+        border: 2px solid #fbb03f !important; 
         background-color: #2f0b3f !important;      
         padding: 4px !important;
         height: auto !important;
-        scrollbar-width: none;            /* Nasconde barra su Firefox */
-        -ms-overflow-style: none;         /* Nasconde barra su IE/Edge */
+        scrollbar-width: none;            
+        -ms-overflow-style: none;         
     }
     
-    /* Forza il bordo anche sul container del widget per sicurezza visiva */
     .element-container:has(iframe) {
         border-radius: 12px !important;
         overflow: hidden !important;
     }
 
-    /* Rimozione della barra di scorrimento su Chrome, Safari e Opera (mobile + desktop) */
     [data-testid="stHtml"]::-webkit-scrollbar {
         display: none !important;
         width: 0px !important;
@@ -74,6 +86,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# Parametri Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
 GID_GIRONI = "1130118483"      
 GID_TABELLONE = "378239650"    
@@ -83,42 +96,73 @@ def carica_calendario(nome_foglio):
     nome_encoded = urllib.parse.quote(nome_foglio)
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={nome_encoded}"
     try:
-        return pd.read_csv(url)
+        df = pd.read_csv(url, header=None, skiprows=1)
+        return df
     except:
         return pd.DataFrame()
 
-st.title("🏐 Baia Beach Cup 2026")
+# --- BARRA DEL TITOLO SENZA LOGO ---
+st.markdown("<h1>🏐 Baia Beach Cup 2026</h1>", unsafe_allow_html=True)
+st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
+# ------------------------------------
 
+# Definizione dei Tab
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
+# --- TAB 1: CALENDARIO (Splittato su Campo 1 e Campo 2) ---
 with tab1:
-    st.subheader("Match del Giorno")
-    df_cal = carica_calendario("Calendario_gironi")
-    if not df_cal.empty:
-        st.dataframe(df_cal, use_container_width=True, hide_index=True)
+    df_raw = carica_calendario("Calendario_gironi")
+    
+    if not df_raw.empty:
+        # Estrariamo e puliamo i dati per il CAMPO 1 (Colonne A, B, C, D, E, F)
+        df_campo1 = df_raw[[0, 1, 2, 3, 4, 5]].dropna(subset=[0]).copy()
+        df_campo1.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        
+        # Estrariamo e puliamo i dati per il CAMPO 2 (Colonne A, H, I, J, K, L)
+        df_campo2 = df_raw[[0, 7, 8, 9, 10, 11]].dropna(subset=[0]).copy()
+        df_campo2.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        
+        # --- MENU A SCOMPARSA CAMPO 1 ---
+        with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 1", expanded=True):
+            st.dataframe(df_campo1, use_container_width=True, hide_index=True)
+            
+        # --- MENU A SCOMPARSA CAMPO 2 ---
+        with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 2", expanded=False):
+            st.dataframe(df_campo2, use_container_width=True, hide_index=True)
+    else:
+        st.info("Il calendario è in fase di compilazione. Torna a controllare più tardi!")
 
 # --- TAB 2: GIRONI ---
 with tab2:
     st.subheader("Situazione Gironi")
-    # Range ricalibrato a 33 righe e altezza a 680px per precisione millimetrica
-    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V33&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_gironi, height=680, scrolling=False)
+    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V35&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_gironi, height=730, scrolling=False)
 
 # --- TAB 3: FASI FINALI ---
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
-    # Range ricalibrato a 33 righe e altezza a 680px per precisione millimetrica
-    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S33&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=675, scrolling=False)
+    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S35&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_tabellone, height=730, scrolling=False)
 
+# --- TAB 4: RICERCA SQUADRA ---
 with tab4:
     st.subheader("Trova le tue Partite")
     df_partite = carica_calendario("Calendario_gironi")
     if not df_partite.empty:
-        col1, col2 = "Squadra 1", "Squadra 2"
-        if col1 in df_partite.columns:
-            squadre = sorted(list(set(df_partite[col1].dropna().unique()) | set(df_partite[col2].dropna().unique())))
-            scelta = st.selectbox("Seleziona la tua Squadra:", [""] + squadre)
-            if scelta:
-                filtro = df_partite[(df_partite[col1] == scelta) | (df_partite[col2] == scelta)]
-                st.dataframe(filtro, use_container_width=True, hide_index=True)
+        p1 = df_partite[[0, 1, 2, 3, 4, 5]].copy()
+        p1.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        p1["Campo"] = "Campo 1"
+        
+        p2 = df_partite[[0, 7, 8, 9, 10, 11]].copy()
+        p2.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        p2["Campo"] = "Campo 2"
+        
+        df_totale = pd.concat([p1, p2]).dropna(subset=["Orario", "Squadra 1"])
+        
+        squadre = sorted(list(set(df_totale["Squadra 1"].dropna().unique()) | set(df_totale["Squadra 2"].dropna().unique())))
+        scelta = st.selectbox("Seleziona la tua Squadra per vedere i tuoi orari:", [""] + squadre)
+        
+        if scelta:
+            filtro = df_totale[(df_totale["Squadra 1"] == scelta) | (df_totale["Squadra 2"] == scelta)].sort_values(by="Orario")
+            filtro = filtro[["Orario", "Campo", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]]
+            st.dataframe(filtro, use_container_width=True, hide_index=True)
