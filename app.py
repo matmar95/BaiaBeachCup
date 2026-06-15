@@ -5,52 +5,70 @@ import urllib.parse
 # 1. Configurazione Pagina Originale
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Mirato sui selettori nativi di Streamlit
+# 2. CSS Aggiornato: Rimosso lo spazio vuoto in cima alla pagina
 st.markdown("""
     <style>
+    /* --- FIX: RIMOZIONE SPAZIO VUOTO IN CIMA --- */
+    .block-container {
+        padding-top: 1rem !important;    /* Riduce drasticamente lo spazio superiore */
+        padding-bottom: 0rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    
+    /* Rimuove l'ulteriore margine inserito dal container dei widget */
+    [data-testid="stVerticalBlock"] {
+        gap: 0rem !important;
+    }
+    
     /* Sfondo principale dell'app */
     .stApp {
         background-color: #2f0b3f;
         color: #ffffff;
     }
     
-    /* Nasconde menu e footer di default */
+    /* Nasconde menu e footer di default per un look pulito */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Colori puliti per Titoli e scritte dei Tab */
+    /* Colori puliti per Titoli e scritte dei Tab superiori */
     h1 {
         color: #fbb03f !important;
         font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        margin-top: 0rem !important; /* Forza il titolo a non avere margini sopra */
+        padding-top: 0rem !important;
     }
     h2, h3, h4 {
         color: #7dcab2 !important;
+        font-family: 'Poppins', sans-serif;
     }
     .stTabs [data-baseweb="tab-list"] button {
         font-size: 18px;
         font-weight: bold;
     }
     
-    /* INTERCETTIAMO IL COMPONENTE IFRAME NATIVO DI STREAMLIT */
-    /* Applichiamo il bordo giallo e lo scroll orizzontale bloccando l'Y */
+    /* Container nativo di Streamlit che avvolge l'iframe */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important;   /* Attiva swipe orizzontale */
-        overflow-y: hidden !important;  /* Blocca totalmente lo scroll verticale */
-        border-radius: 10px;
-        border: 2px solid #fbb03f;
-        background-color: #2f0b3f;
+        overflow-y: hidden !important;  /* Blocca totalmente lo scroll verticale interno */
+        border-radius: 12px;            
+        border: 2px solid #fbb03f !important; 
+        background-color: #2f0b3f;      
+        padding: 5px;                  
     }
 
     [data-testid="stHtml"] iframe {
         display: block;
         vertical-align: bottom;
+        border: none !important; 
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Parametri Sheets
+# Parametri di configurazione del tuo Google Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
 GID_GIRONI = "1130118483"      
 GID_TABELLONE = "378239650"    
@@ -64,9 +82,10 @@ def carica_calendario(nome_foglio):
     except:
         return pd.DataFrame()
 
-# Struttura Principale
+# Titolo Principale dell'App
 st.title("🏐 Baia Beach Cup 2026")
 
+# Creazione dei 4 Tab
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
 # --- TAB 1: CALENDARIO ---
@@ -80,16 +99,12 @@ with tab1:
 with tab2:
     st.subheader("Situazione Gironi")
     embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V32&widget=false&chrome=false&headers=false&rm=minimal"
-    
-    # Rimosso il div manuale, usiamo solo il componente nativo
     st.components.v1.iframe(embed_gironi, height=850, scrolling=False)
 
 # --- TAB 3: FASI FINALI ---
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
-    
-    # Rimosso il div manuale, usiamo solo il componente nativo
     st.components.v1.iframe(embed_tabellone, height=850, scrolling=False)
 
 # --- TAB 4: RICERCA SQUADRA ---
@@ -100,7 +115,9 @@ with tab4:
         col1, col2 = "Squadra 1", "Squadra 2"
         if col1 in df_partite.columns:
             squadre = sorted(list(set(df_partite[col1].dropna().unique()) | set(df_partite[col2].dropna().unique())))
-            scelta = st.selectbox("Seleziona la tua Squadra:", [""] + squadre)
+            scelta = st.selectbox("Seleziona la tua Squadra per vedere i tuoi orari:", [""] + squadre)
             if scelta:
                 filtro = df_partite[(df_partite[col1] == scelta) | (df_partite[col2] == scelta)]
                 st.dataframe(filtro, use_container_width=True, hide_index=True)
+        else:
+            st.info("La lista delle squadre sarà disponibile non appena il calendario sarà popolato.")
