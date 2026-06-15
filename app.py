@@ -5,7 +5,7 @@ import urllib.parse
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. Iniezione CSS Personalizzato
+# 2. Iniezione CSS per Sfondo, Titoli, Tab e Tabelle custom
 st.markdown("""
     <style>
     /* Sfondo principale dell'app */
@@ -25,12 +25,12 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
     }
-    h2, h3, h4 {
+    h2, h3, h4, .stSubheader {
         color: #7dcab2 !important;
         font-family: 'Poppins', sans-serif;
     }
     
-    /* Testo dei widget (es. selectbox) */
+    /* Testo dei widget */
     .stSelectbox label p {
         color: #7dcab2 !important;
     }
@@ -64,26 +64,28 @@ st.markdown("""
         background-color: #2f0b3f;
     }
 
-    /* SOVRASCRITTURA TABELLE (Streamlit Dataframe) -> ORA GIALLINE */
-    [data-testid="stDataFrame"] div {
-        background-color: #fbb03f !important;
+    /* STILE DELLE TABELLE HTML CUSTOM (Giallina, testo viola) */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #fbb03f;
+        color: #2f0b3f;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 15px;
     }
-    /* Intestazione Tabella (Menta) */
-    [data-testid="stDataFrame"] th {
-        background-color: #7dcab2 !important;
-        color: #2f0b3f !important;
+    .custom-table th {
+        background-color: #7dcab2;
+        color: #2f0b3f;
+        padding: 12px;
         font-weight: bold;
-        border: 1px solid #2f0b3f !important;
+        text-align: left;
+        border: 1px solid #2f0b3f;
     }
-    /* Righe della tabella (Sfondo giallino, testo viola, bordi viola) */
-    [data-testid="stDataFrame"] td {
-        background-color: #fbb03f !important;
-        color: #2f0b3f !important;
-        border: 1px solid #2f0b3f !important;
-    }
-    /* Forza il testo generico all'interno del dataframe ad essere scuro sul giallino */
-    [data-testid="stDataFrame"] div div {
-        color: #2f0b3f !important;
+    .custom-table td {
+        padding: 12px;
+        border: 1px solid #2f0b3f;
+        font-size: 16px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -98,11 +100,12 @@ def carica_calendario(nome_foglio):
     nome_encoded = urllib.parse.quote(nome_foglio)
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={nome_encoded}"
     try:
-        return pd.read_csv(url)
+        # Carichiamo i dati riempiendo i valori vuoti per evitare scritte "NaN" nella tabella HTML
+        return pd.read_csv(url).fillna("")
     except:
         return pd.DataFrame()
 
-# Titolo Principale (diventerà #fbb03f)
+# Titolo Principale
 st.title("🏐 Baia Beach Cup 2026")
 
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
@@ -111,17 +114,19 @@ with tab1:
     st.subheader("Match del Giorno")
     df_cal = carica_calendario("Calendario_gironi")
     if not df_cal.empty:
-        st.dataframe(df_cal, use_container_width=True, hide_index=True)
+        # Trasformiamo il dataframe in una tabella HTML pulita usando la nostra classe CSS giallina
+        html_table = df_cal.to_html(index=False, classes="custom-table")
+        st.markdown(html_table, unsafe_allow_html=True)
+    else:
+        st.info("Calendario in fase di caricamento...")
 
 with tab2:
     st.subheader("Situazione Gironi")
-    # Ridotto a A1:V32 per stringere il frame ed evitare scrolling vuoto
     embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V32&widget=false&chrome=false&headers=false&rm=minimal"
     st.components.v1.iframe(embed_gironi, height=680, scrolling=True)
 
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
-    # Ridotto a A1:S32 per tagliare le righe vuote del tabellone
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
     st.components.v1.iframe(embed_tabellone, height=750, scrolling=True)
 
@@ -132,7 +137,10 @@ with tab4:
         col1, col2 = "Squadra 1", "Squadra 2"
         if col1 in df_partite.columns:
             squadre = sorted(list(set(df_partite[col1].dropna().unique()) | set(df_partite[col2].dropna().unique())))
+            # Rimuoviamo eventuali stringhe vuote dalla lista di selezione
+            squadre = [s for s in squadre if s != ""]
             scelta = st.selectbox("Seleziona la tua Squadra:", [""] + squadre)
             if scelta:
                 filtro = df_partite[(df_partite[col1] == scelta) | (df_partite[col2] == scelta)]
-                st.dataframe(filtro, use_container_width=True, hide_index=True)
+                html_filtro = filtro.to_html(index=False, classes="custom-table")
+                st.markdown(html_filtro, unsafe_allow_html=True)
