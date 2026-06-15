@@ -5,7 +5,7 @@ import urllib.parse
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio in cima azzerato e bordi gialli precisi
+# 2. CSS Blindato: Spazio azzerato, bordi gialli e BARRA DI SCORRIMENTO NASCOSTA
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -37,7 +37,7 @@ st.markdown("""
     h2, h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; }
     .stTabs [data-baseweb="tab-list"] button { font-size: 18px; font-weight: bold; }
     
-    /* Container per l'iframe: altezza fissa per evitare il bianco sotto */
+    /* Container per l'iframe: mantiene il bordo giallo e nasconde la barra */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
@@ -46,7 +46,19 @@ st.markdown("""
         border: 2px solid #fbb03f !important; 
         background-color: #2f0b3f;      
         padding: 4px;
-        height: auto !important; /* Permette al container di adattarsi all'altezza dell'iframe */
+        height: auto !important;
+        
+        /* --- FIX: NASCONDE LA BARRA DI SCORRIMENTO --- */
+        scrollbar-width: none;            /* Per Firefox */
+        -ms-overflow-style: none;         /* Per Internet Explorer/Edge */
+    }
+
+    /* Per Chrome, Safari e Opera (iOS e Android) */
+    [data-testid="stHtml"]::-webkit-scrollbar {
+        display: none !important;
+        width: 0px !important;
+        height: 0px !important;
+        background: transparent !important;
     }
 
     [data-testid="stHtml"] iframe {
@@ -83,16 +95,14 @@ with tab1:
 # --- TAB 2: GIRONI ---
 with tab2:
     st.subheader("Situazione Gironi")
-    # Range impostato a V33 e altezza a 715
-    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V33&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_gironi, height=715, scrolling=False)
+    embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V35&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_gironi, height=730, scrolling=False)
 
 # --- TAB 3: FASI FINALI ---
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
-    # Range impostato a S33 e altezza a 715 per tagliare il bianco
-    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S33&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=670, scrolling=False)
+    embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S35&widget=false&chrome=false&headers=false&rm=minimal"
+    st.components.v1.iframe(embed_tabellone, height=700, scrolling=False)
 
 with tab4:
     st.subheader("Trova le tue Partite")
