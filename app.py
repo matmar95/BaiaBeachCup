@@ -3,11 +3,12 @@ import pandas as pd
 import urllib.parse
 import time
 from datetime import datetime
+import zoneinfo
 
 # 1. Configurazione Pagina
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e BORDO GIALLO FORZATO
+# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e NO FRAME INTORNO ALLE TABELLE
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -62,13 +63,13 @@ st.markdown("""
     /* Stile per gli Expander */
     .stDecoration { background-color: #fbb03f !important; }
     
-    /* --- COPERTURA TOTALE PER IL BORDO GIALLO DEI TABELLONI --- */
+    /* --- COPERTURA PER IFRAME E TABELLONI (FRAME RIMOSSO) --- */
     [data-testid="stHtml"] {
         width: 100% !important;
         overflow-x: auto !important; 
         overflow-y: hidden !important; 
         border-radius: 12px !important;            
-        border: 2px solid #fbb03f !important; 
+        border: none !important; /* Rimosso il bordo giallo fastidioso */
         background-color: #2f0b3f !important;      
         padding: 4px !important;
         height: auto !important;
@@ -149,8 +150,9 @@ def formatta_punteggio(row, col_s1, col_s2):
 @st.fragment(run_every=60)
 def rendering_applicazione():
     
-    # Visualizzazione dell'orario dell'ultimo refresh dati
-    orario_attuale = datetime.now().strftime("%H:%M:%S")
+    # Visualizzazione dell'orario con Timezone Roma bloccata
+    fuso_roma = zoneinfo.ZoneInfo("Europe/Rome")
+    orario_attuale = datetime.now(fuso_roma).strftime("%H:%M:%S")
     st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
     
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
@@ -180,7 +182,7 @@ def rendering_applicazione():
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI (PARSING DALLA A ALLA I SENZA EMOJI) ---
+    # --- TAB 2: GIRONI (PARSING DINAMICO A-I) ---
     with tab2:
         st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
@@ -213,7 +215,6 @@ def rendering_applicazione():
                         
                         block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
                         
-                        # Titolo pulito senza emoji come richiesto
                         st.markdown(f"### GIRONE {nome_girone}")
                         st.dataframe(
                             block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
