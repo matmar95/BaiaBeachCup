@@ -117,7 +117,7 @@ with tab2:
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=850, scrolling=False)
+    st.components.v1.iframe(embed_tabellone, height=800, scrolling=False)
 
 # --- TAB 4: RICERCA SQUADRA ---
 with tab4:
