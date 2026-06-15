@@ -92,8 +92,6 @@ SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
 GID_GIRONI = "1130118483"      
 GID_TABELLONE = "378239650"    
 
-# Abbiamo abbassato il TTL della cache a 5 secondi per garantire che al refresh 
-# i dati vengano effettivamente riscaricati da Google Sheets senza pescare quelli vecchi memorizzati
 @st.cache_data(ttl=5)
 def carica_dati_csv(nome_foglio):
     nome_encoded = urllib.parse.quote(nome_foglio)
@@ -139,11 +137,9 @@ def formatta_punteggio(row, col_s1, col_s2):
     return "-"
 
 # --- LOGICA DI REFRESH AUTOMATICO (Ogni 60 secondi) ---
-# Utilizziamo st.fragment per isolare e aggiornare l'intera area dei tab in background
 @st.fragment(run_every=60)
 def rendering_applicazione():
     
-    # Definizione dei Tab all'interno del frammento dinamico
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
     # --- TAB 1: CALENDARIO ---
@@ -171,51 +167,59 @@ def rendering_applicazione():
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI ---
+    # --- TAB 2: GIRONI (PARSING MAPPA RIGHE FISSE) ---
     with tab2:
         st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
         
         if not df_gironi_raw.empty:
-            num_righe = len(df_gironi_raw)
-            idx = 0
-            while idx < num_righe:
-                nome_girone = df_gironi_raw.iloc[idx, 0]
-                if pd.isna(nome_girone) or str(nome_girone).strip() == "":
-                    idx += 1
-                    continue
+            # Definizione esatta delle coordinate del foglio Excel (0-indexed in Python)
+            # Riga 1 Excel = Indice 0, Riga 7 Excel = Indice 6, ecc.
+            mappa_gironi = [
+                {"riga_titolo": 0, "start_squadre": 1, "end_squadre": 5},   # Girone A (Righe 1, poi 2-5)
+                {"riga_titolo": 6, "start_squadre": 7, "end_squadre": 11},  # Girone B (Righe 7, poi 8-11)
+                {"riga_titolo": 12, "start_squadre": 13, "end_squadre": 17}, # Girone C (Righe 13, poi 14-17)
+                {"riga_titolo": 18, "start_squadre": 19, "end_squadre": 23}  # Girone D (Righe 19, poi 20-23)
+            ]
+            
+            for config in mappa_gironi:
+                # Controlliamo che il foglio contenga abbastanza righe per evitare crash accidentali
+                if len(df_gironi_raw) > config["riga_titolo"]:
+                    nome_girone = df_gironi_raw.iloc[config["riga_titolo"], 0]
                     
-                start_squadre = idx + 1
-                end_squadre = min(start_squadre + 4, num_righe)
-                block = df_gironi_raw.iloc[start_squadre:end_squadre].copy()
-                
-                block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
-                
-                for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
-                    block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
-                
-                block["Quoziente Punti"] = block.apply(
-                    lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
-                    axis=1
-                )
-                
-                block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
-                st.markdown(f"### 📊 {str(nome_girone).upper()}")
-                
-                st.dataframe(
-                    block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
-                    use_container_width=False,
-                    hide_index=True,
-                    column_config=config_colonne_gironi
-                )
-                idx += 6
+                    # Estraiamo esattamente le 4 righe delle squadre corrette
+                    block = df_gironi_raw.iloc[config["start_squadre"]:config["end_squadre"]].copy()
+                    
+                    # Assegniamo i nomi alle colonne
+                    block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
+                    
+                    # Conversione e pulizia dati numerici
+                    for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
+                        block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
+                    
+                    # Calcolo automatico e in tempo reale del Points Quotient
+                    block["Quoziente Punti"] = block.apply(
+                        lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
+                        axis=1
+                    )
+                    
+                    # Ordinamento meritocratico: Score -> Vittorie -> Quoziente Punti
+                    block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
+                    
+                    # Render del blocco grafico su Streamlit
+                    st.markdown(f"### 📊 {str(nome_girone).upper()}")
+                    st.dataframe(
+                        block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
+                        use_container_width=False,
+                        hide_index=True,
+                        column_config=config_colonne_gironi
+                    )
         else:
             st.info("Le classifiche dei gironi saranno disponibili all'inizio dei match.")
 
-    # --- TAB 3: FASI FINALI (Aggiorna anche l'iframe) ---
+    # --- TAB 3: FASI FINALI ---
     with tab3:
         st.subheader("Tabellone ad Eliminazione")
-        # Aggiungiamo un timestamp finto all'URL dell'iframe per forzare il rinfresco ed evitare che rimanga la vecchia versione in cache
         timestamp_cache = int(time.time())
         embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S35&widget=false&chrome=false&headers=false&rm=minimal&cb={timestamp_cache}"
         st.components.v1.iframe(embed_tabellone, height=730, scrolling=False)
@@ -254,5 +258,5 @@ def rendering_applicazione():
                 
                 st.dataframe(filtro, use_container_width=False, hide_index=True, column_config=config_colonne_ricerca)
 
-# Eseguiamo il blocco dell'applicazione
+# Esecuzione
 rendering_applicazione()
