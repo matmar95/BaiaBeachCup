@@ -5,7 +5,7 @@ import urllib.parse
 # 1. Configurazione Pagina Originale
 st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Minimale solo per Sfondo e Titoli (senza toccare le tabelle)
+# 2. CSS con blocco dello scrolling verticale sui frame
 st.markdown("""
     <style>
     /* Sfondo principale dell'app */
@@ -32,10 +32,18 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Bordi puliti per i fogli embedded */
-    iframe {
+    /* Forza lo scrolling SOLO ORIZZONTALE sui frame */
+    .iframe-container {
+        width: 100%;
+        overflow-x: auto;  /* Attiva lo scroll orizzontale se il contenuto esce */
+        overflow-y: hidden; /* Blocca totalmente lo scroll verticale */
         border-radius: 10px;
         border: 2px solid #fbb03f;
+    }
+    
+    .iframe-container iframe {
+        border: none !important; /* Rimuove il bordo interno dell'iframe */
+        display: block;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -54,31 +62,39 @@ def carica_calendario(nome_foglio):
     except:
         return pd.DataFrame()
 
-# Struttura e Titoli Originali
+# Struttura Principale
 st.title("🏐 Baia Beach Cup 2026")
 
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
-# --- TAB 1: CALENDARIO (Ripristinato nativo) ---
+# --- TAB 1: CALENDARIO ---
 with tab1:
     st.subheader("Match del Giorno")
     df_cal = carica_calendario("Calendario_gironi")
     if not df_cal.empty:
         st.dataframe(df_cal, use_container_width=True, hide_index=True)
 
-# --- TAB 2: GIRONI ---
+# --- TAB 2: GIRONI (Con Scroll Solo Orizzontale) ---
 with tab2:
     st.subheader("Situazione Gironi")
     embed_gironi = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_GIRONI}&range=A1:V32&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_gironi, height=680, scrolling=True)
+    
+    # Avvolgiamo l'iframe nel container CSS personalizzato
+    st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
+    st.components.v1.iframe(embed_gironi, height=680, scrolling=False)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 3: FASI FINALI ---
+# --- TAB 3: FASI FINALI (Con Scroll Solo Orizzontale) ---
 with tab3:
     st.subheader("Tabellone ad Eliminazione")
     embed_tabellone = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/htmlembed?gid={GID_TABELLONE}&range=A1:S32&widget=false&chrome=false&headers=false&rm=minimal"
-    st.components.v1.iframe(embed_tabellone, height=620, scrolling=True)
+    
+    # Avvolgiamo l'iframe nel container CSS personalizzato
+    st.markdown('<div class="iframe-container">', unsafe_allow_html=True)
+    st.components.v1.iframe(embed_tabellone, height=750, scrolling=False)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 4: RICERCA SQUADRA (Ripristinato nativo) ---
+# --- TAB 4: RICERCA SQUADRA ---
 with tab4:
     st.subheader("Trova le tue Partite")
     df_partite = carica_calendario("Calendario_gironi")
