@@ -167,53 +167,54 @@ def rendering_applicazione():
         else:
             st.info("Il calendario è in fase di compilazione.")
 
-    # --- TAB 2: GIRONI (PARSING MAPPA INDICI CORRETTI) ---
+    # --- TAB 2: GIRONI (PARSING INTELLIGENTE DALLA A ALLA I) ---
     with tab2:
         st.subheader("Classifiche Gironi")
         df_gironi_raw = carica_dati_csv("Gironi")
         
         if not df_gironi_raw.empty:
-            # MAPPAZIONE MILLIMETRICA:
-            # Girone A -> Titolo riga 1 (0), squadre righe 2-5 (indici 1, 2, 3, 4 -> in Python slice 1:5)
-            # Girone B -> Titolo riga 7 (6), squadre righe 8-11 (indici 7, 8, 9, 10 -> in Python slice 7:11)
-            mappa_gironi = [
-                {"riga_titolo": 0, "start_squadre": 1, "end_squadre": 5},   
-                {"riga_titolo": 6, "start_squadre": 7, "end_squadre": 11},  
-                {"riga_titolo": 12, "start_squadre": 13, "end_squadre": 17}, 
-                {"riga_titolo": 18, "start_squadre": 19, "end_squadre": 23}  
-            ]
+            # Lista dei gironi ammessi da cercare nella prima colonna del foglio
+            gironi_validi = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
             
-            for config in mappa_gironi:
-                if len(df_gironi_raw) > config["riga_titolo"]:
-                    nome_girone = df_gironi_raw.iloc[config["riga_titolo"], 0]
+            for i in range(len(df_gironi_raw)):
+                valore_cella = str(df_gironi_raw.iloc[i, 0]).strip()
+                
+                # Se la cella contiene esattamente una delle lettere dei nostri gironi
+                if valore_cella in gironi_validi:
+                    nome_girone = valore_cella
                     
-                    # Estraiamo esattamente il blocco delle 4 righe delle squadre
-                    block = df_gironi_raw.iloc[config["start_squadre"]:config["end_squadre"]].copy()
+                    # Estraiamo esattamente le 4 righe successive dedicate alle squadre del blocco
+                    start_idx = i + 1
+                    end_idx = min(start_idx + 4, len(df_gironi_raw))
                     
-                    # Rinominiamo le colonne per l'elaborazione dati
-                    block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
+                    block = df_gironi_raw.iloc[start_idx:end_idx].copy()
                     
-                    # Conversione e pulizia dati numerici
-                    for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
-                        block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
-                    
-                    # Calcolo in tempo reale del Points Quotient
-                    block["Quoziente Punti"] = block.apply(
-                        lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
-                        axis=1
-                    )
-                    
-                    # Ordinamento automatico: Punti Totali (Score) -> Vittorie -> Quoziente Punti
-                    block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
-                    
-                    # Rendering grafico del girone
-                    st.markdown(f"### 📊 {str(nome_girone).upper()}")
-                    st.dataframe(
-                        block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
-                        use_container_width=False,
-                        hide_index=True,
-                        column_config=config_colonne_gironi
-                    )
+                    # Se per qualche motivo il blocco non ha 8 colonne, lo forziamo per evitare eccezioni
+                    if block.shape[1] >= 8:
+                        block = block.iloc[:, 0:8]
+                        block.columns = ["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]
+                        
+                        # Conversione e pulizia dati numerici
+                        for col in ["Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali"]:
+                            block[col] = pd.to_numeric(block[col], errors='coerce').fillna(0)
+                        
+                        # Calcolo in tempo reale del Quoziente Punti (Quot. Punti)
+                        block["Quoziente Punti"] = block.apply(
+                            lambda r: float(r["Punti Fatti"]) / float(r["Punti Subiti"]) if float(r["Punti Subiti"]) > 0 else float(r["Punti Fatti"]), 
+                            axis=1
+                        )
+                        
+                        # Ordinamento ufficiale meritocratico: Score (Punti Totali) -> Vittorie -> Quoziente Punti
+                        block = block.sort_values(by=["Punti Totali", "Vittorie", "Quoziente Punti"], ascending=[False, False, False])
+                        
+                        # Rendering grafico della tabella pulita
+                        st.markdown(f"### 📊 GIRONE {nome_girone}")
+                        st.dataframe(
+                            block[["Squadra", "Giocate", "Vittorie", "Sconfitte", "Punti Fatti", "Punti Subiti", "Diff Punti", "Punti Totali", "Quoziente Punti"]],
+                            use_container_width=False,
+                            hide_index=True,
+                            column_config=config_colonne_gironi
+                        )
         else:
             st.info("Le classifiche dei gironi saranno disponibili all'inizio dei match.")
 
