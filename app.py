@@ -108,45 +108,62 @@ st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
 # Definizione dei Tab
 tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
-# --- CONFIGURAZIONE LARGHEZZA COLONNE (Dizionario riutilizzabile) ---
+# --- NUOVA CONFIGURAZIONE COLONNE COMPATTE IN PIXEL ---
+# Definiamo la larghezza esatta in pixel per costringerle a stare strette
 config_colonne_campi = {
-    "Orario": st.column_config.TextColumn("Orario", width="small"),
-    "Girone": st.column_config.TextColumn("Girone", width="small"),
-    "Squadra 1": st.column_config.TextColumn("Squadra 1", width="medium"),
-    "Set 1": st.column_config.TextColumn("Set 1", width="small"),
-    "Set 2": st.column_config.TextColumn("Set 2", width="small"),
-    "Squadra 2": st.column_config.TextColumn("Squadra 2", width="medium"),
+    "Orario": st.column_config.TextColumn("Orario", width=65),
+    "Girone": st.column_config.TextColumn("Girone", width=65),
+    "Squadra 1": st.column_config.TextColumn("Squadra 1", width=140),
+    "Risultato": st.column_config.TextColumn("Risultato", width=85),
+    "Squadra 2": st.column_config.TextColumn("Squadra 2", width=140),
 }
+
+# Funzione d'appoggio per unire i set in un'unica stringa "Set1-Set2"
+def formatta_punteggio(row, col_s1, col_s2):
+    s1 = str(row[col_s1]).strip() if pd.notna(row[col_s1]) else ""
+    s2 = str(row[col_s2]).strip() if pd.notna(row[col_s2]) else ""
+    # Se entrambi i punteggi sono presenti (o sono numeri), uniscili, altrimenti metti un trattino vuoto
+    if s1 != "" and s2 != "" and s1 != "nan" and s2 != "nan":
+        # Rimuove eventuali decimali (.0) se presenti per errore nel foglio
+        s1 = s1.split('.')[0] if '.' in s1 else s1
+        s2 = s2.split('.')[0] if '.' in s2 else s2
+        return f"{s1}-{s2}"
+    return "-"
 
 # --- TAB 1: CALENDARIO ---
 with tab1:
     df_raw = carica_calendario("Calendario_gironi")
     
     if not df_raw.empty:
-        # Estrazione dati CAMPO 1 (Colonne A, B, C, D, E, F)
+        # --- ELABORAZIONE CAMPO 1 ---
         df_campo1 = df_raw[[0, 1, 2, 3, 4, 5]].dropna(subset=[0]).copy()
-        df_campo1.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        df_campo1["Risultato"] = df_campo1.apply(lambda r: formatta_punteggio(r, 3, 4), axis=1)
+        # Teniamo solo le colonne che ci interessano, con la nuova colonna Risultato in mezzo
+        df_campo1_final = df_campo1[[0, 1, 2, "Risultato", 5]].copy()
+        df_campo1_final.columns = ["Orario", "Girone", "Squadra 1", "Risultato", "Squadra 2"]
         
-        # Estrazione dati CAMPO 2 (Colonne A, H, I, J, K, L)
+        # --- ELABORAZIONE CAMPO 2 ---
         df_campo2 = df_raw[[0, 7, 8, 9, 10, 11]].dropna(subset=[0]).copy()
-        df_campo2.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
+        df_campo2["Risultato"] = df_campo2.apply(lambda r: formatta_punteggio(r, 9, 10), axis=1)
+        df_campo2_final = df_campo2[[0, 7, 8, "Risultato", 11]].copy()
+        df_campo2_final.columns = ["Orario", "Girone", "Squadra 1", "Risultato", "Squadra 2"]
         
         # --- MENU A SCOMPARSA CAMPO 1 ---
         with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 1", expanded=True):
             st.dataframe(
-                df_campo1, 
-                use_container_width=True, 
+                df_campo1_final, 
+                use_container_width=False, # DISATTIVATO per evitare che si allarghi a tutto schermo
                 hide_index=True,
-                column_config=config_colonne_campi # Applica le colonne strette
+                column_config=config_colonne_campi
             )
             
         # --- MENU A SCOMPARSA CAMPO 2 ---
         with st.expander("🏟️ VISUALIZZA MATCH - CAMPO 2", expanded=False):
             st.dataframe(
-                df_campo2, 
-                use_container_width=True, 
+                df_campo2_final, 
+                use_container_width=False, # DISATTIVATO per evitare che si allarghi a tutto schermo
                 hide_index=True,
-                column_config=config_colonne_campi # Applica le colonne strette
+                column_config=config_colonne_campi
             )
     else:
         st.info("Il calendario è in fase di compilazione. Torna a controllare più tardi!")
@@ -168,30 +185,35 @@ with tab4:
     st.subheader("Trova le tue Partite")
     df_partite = carica_calendario("Calendario_gironi")
     if not df_partite.empty:
+        # Generazione blocco unico con colonna Risultato per la ricerca
         p1 = df_partite[[0, 1, 2, 3, 4, 5]].copy()
-        p1.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
-        p1["Campo"] = "Campo 1"
+        p1["Risultato"] = p1.apply(lambda r: formatta_punteggio(r, 3, 4), axis=1)
+        p1_f = p1[[0, 1, 2, "Risultato", 5]].copy()
+        p1_f.columns = ["Orario", "Girone", "Squadra 1", "Risultato", "Squadra 2"]
+        p1_f["Campo"] = "Campo 1"
         
         p2 = df_partite[[0, 7, 8, 9, 10, 11]].copy()
-        p2.columns = ["Orario", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]
-        p2["Campo"] = "Campo 2"
+        p2["Risultato"] = p2.apply(lambda r: formatta_punteggio(r, 9, 10), axis=1)
+        p2_f = p2[[0, 7, 8, "Risultato", 11]].copy()
+        p2_f.columns = ["Orario", "Girone", "Squadra 1", "Risultato", "Squadra 2"]
+        p2_f["Campo"] = "Campo 2"
         
-        df_totale = pd.concat([p1, p2]).dropna(subset=["Orario", "Squadra 1"])
+        df_totale = pd.concat([p1_f, p2_f]).dropna(subset=["Orario", "Squadra 1"])
         
         squadre = sorted(list(set(df_totale["Squadra 1"].dropna().unique()) | set(df_totale["Squadra 2"].dropna().unique())))
         scelta = st.selectbox("Seleziona la tua Squadra per vedere i tuoi orari:", [""] + squadre)
         
         if scelta:
             filtro = df_totale[(df_totale["Squadra 1"] == scelta) | (df_totale["Squadra 2"] == scelta)].sort_values(by="Orario")
-            filtro = filtro[["Orario", "Campo", "Girone", "Squadra 1", "Set 1", "Set 2", "Squadra 2"]]
+            filtro = filtro[["Orario", "Campo", "Girone", "Squadra 1", "Risultato", "Squadra 2"]]
             
-            # Configurazione ad hoc per la ricerca (include anche la colonna Campo)
+            # Configurazione colonne per il pannello di ricerca
             config_colonne_ricerca = config_colonne_campi.copy()
-            config_colonne_ricerca["Campo"] = st.column_config.TextColumn("Campo", width="small")
+            config_colonne_ricerca["Campo"] = st.column_config.TextColumn("Campo", width=75)
             
             st.dataframe(
                 filtro, 
-                use_container_width=True, 
+                use_container_width=False, # Mantiene compatto anche il pannello ricerca
                 hide_index=True,
                 column_config=config_colonne_ricerca
             )
