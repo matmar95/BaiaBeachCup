@@ -52,8 +52,11 @@ st.markdown("""
     
     /* Logo rimpicciolito di un ulteriore 50% (da 75px a 38px) */
     .logo-grande {
-        max-width: 20px; 
-        display: block;
+        max-width: 25px !important; /* Proviamo 25px, 20px potrebbe essere invisibile */
+        width: 100% !important;     /* Forza la larghezza */
+        height: auto !important;    /* Mantiene le proporzioni */
+        display: block !important;
+        margin: 0 auto !important;  /* Centratura */
     }
     
     /* Configurazione Titolo Giallo, Centrato e su una sola riga */
