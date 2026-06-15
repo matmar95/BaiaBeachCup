@@ -18,7 +18,7 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Spazio azzerato, BARRA NASCOSTA e NO BORDINI
+# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e Colori Tab
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
@@ -26,8 +26,8 @@ st.markdown("""
     .main .block-container {
         padding-top: 0.5rem !important;
         padding-bottom: 0rem !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
     
     [data-testid="stVerticalBlock"] > div:first-child {
@@ -39,41 +39,65 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Contenitore Logo Centrato/Allineato */
+    /* Contenitore Logo Centrato per Mobile */
     .logo-container {
-        display: block;
-        margin-top: 0.2rem !important;
-        margin-bottom: 0.5rem !important;
-        padding-top: 0rem !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 0.4rem !important;
+        margin-bottom: 0.4rem !important;
+        width: 100%;
     }
     
-    /* Stile per il nuovo logo tondo grande */
+    /* Dimensione ottimizzata per smartphone */
     .logo-grande {
-        max-width: 180px; /* Dimensione aumentata sostanzialmente */
+        max-width: 110px; 
         height: auto;
         display: block;
     }
     
-    /* Configurazione Sottotitolo unico (H2) */
+    /* Configurazione Sottotitolo Giallo e Centrato */
     h2 {
-        color: #7dcab2 !important;
+        color: #fbb03f !important; /* Diventato Giallo */
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
+        text-align: center; /* Centrato */
         margin-top: 0rem !important;
-        margin-bottom: 0.2rem !important;
-        font-size: 1.8rem;
+        margin-bottom: 0.6rem !important;
+        font-size: 1.6rem;
+        width: 100%;
     }
 
-    /* Testo Ultimo Refresh */
+    /* Testo Ultimo Refresh Centrato */
     .refresh-text {
         color: #aaaaaa;
-        font-size: 14px;
+        font-size: 13px;
         font-family: 'Poppins', sans-serif;
+        text-align: center;
         margin-bottom: 0.8rem !important;
+        width: 100%;
     }
     
     h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; margin-bottom: 0.4rem !important;}
-    .stTabs [data-baseweb="tab-list"] button { font-size: 18px; font-weight: bold; }
+    
+    /* --- STILE TAB STREAMLIT CON EVIDENZIAZIONE IN GIALLO --- */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        justify-content: space-between; /* Ottimizza lo spazio su mobile */
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        font-size: 15px !important; /* Leggermente più piccolo per non andare a capo su mobile */
+        font-weight: bold !important;
+        color: #aaaaaa !important; /* Colore tab spenti */
+        padding: 8px 10px !important;
+    }
+
+    /* Tab Selezionato (Testo Giallo e Linea Sotto Gialla) */
+    .stTabs [aria-selected="true"] {
+        color: #fbb03f !important;
+        border-bottom-color: #fbb03f !important;
+    }
     
     /* Stile per gli Expander */
     .stDecoration { background-color: #fbb03f !important; }
@@ -130,7 +154,7 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING LOGO GRANDE ---
+# --- RENDERING LOGO CENTRATO ---
 if os.path.exists(logo_path):
     import base64
     with open(logo_path, "rb") as image_file:
@@ -142,10 +166,9 @@ if os.path.exists(logo_path):
         </div>
     """, unsafe_allow_html=True)
 else:
-    # Fallback testuale se il logo non viene trovato nella cartella
-    st.markdown("<h2 style='color: #fbb03f !important;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
 
-# --- SOTTOTITOLO UNICO ---
+# --- SOTTOTITOLO GIALLO E CENTRATO ---
 st.markdown("<h2>2x2 Maschile</h2>", unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
@@ -184,7 +207,7 @@ def rendering_applicazione():
     
     fuso_roma = zoneinfo.ZoneInfo("Europe/Rome")
     orario_attuale = datetime.now(fuso_roma).strftime("%H:%M:%S")
-    st.markdown(f"<div class='refresh-text'>Last update: {orario_attuale}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='refresh-text'>🔄 Ultimo aggiornamento dati: {orario_attuale}</div>", unsafe_allow_html=True)
     
     tab1, tab2, tab3, tab4 = st.tabs(["📅 CALENDARIO", "📊 GIRONI", "🏆 FASI FINALI", "🔍 CERCA SQUADRA"])
 
