@@ -18,14 +18,17 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS BLINDATO - Ricalibrato con proporzioni auree da Designer
+# 2. CSS BLINDATO - Ottimizzazione Spazi Alti per Mobile e Desktop
 st.markdown("""
     <style>
-    header { display: none !important; height: 0px !important; }
+    /* Rimozione Header Nativo di Streamlit (tutte le possibili varianti classiche) */
+    header, [data-testid="stHeader"] { display: none !important; height: 0px !important; }
     .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
+    /* --- AZZERAMENTO PADDING DI STREAMLIT --- */
     .main .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 0px !important;      /* Elimina lo spazio vuoto superiore nativo */
+        margin-top: 0px !important;       /* Resetta eventuali margini */
         padding-bottom: 0rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
@@ -39,19 +42,20 @@ st.markdown("""
         justify-content: center;
         text-align: center;
         width: 100%;
-        margin-top: 10px;
-        margin-bottom: 5px;
+        margin-top: -10px !important;     /* Margine negativo controllato per tirare su il logo su mobile */
+        padding-top: 0px !important;
+        margin-bottom: 8px;
     }
     
-    /* Logo ingrandito a 100px per rendere leggibili i dettagli interni e il testo nel cerchio */
+    /* Logo a 100px con ombra morbida */
     .logo-centrato-img {
         width: 100px !important;
         height: auto !important;
-        margin-bottom: 12px !important; /* Più spazio (respiro) prima del titolo */
-        filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.25)); /* Lo stacca dallo sfondo verde */
+        margin-bottom: 10px !important; 
+        filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.25));
     }
 
-    /* Titolo Giallo leggermente ritoccato nella dimensione per armonizzarsi con il logo grande */
+    /* Titolo Giallo */
     .titolo-giallo { 
         color: #fbb03f !important; 
         font-family: 'Poppins', 'Helvetica Neue', sans-serif;
@@ -128,7 +132,7 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING DELL'HEADER UNIFICATO (PROPORZIONI RICALIBRATE) ---
+# --- RENDERING DELL'HEADER UNIFICATO ---
 encoded_logo = ""
 if os.path.exists(logo_path):
     import base64
@@ -288,8 +292,8 @@ def rendering_applicazione():
             squadre = sorted(list(set(df_totale["Squadra 1"].dropna().unique()) | set(df_totale["Squadra 2"].dropna().unique())))
             scelta = st.selectbox("Seleziona la tua Squadra per vedere i tuoi orari:", [""] + squadre)
             
-            if scelta:
-                filtro = df_totale[(df_totale["Squadra 1"] == scelta) | (df_totale["Squadra 2"] == scelta)].sort_values(by="Orario")
+            if choix := scelta:
+                filtro = df_totale[(df_totale["Squadra 1"] == choix) | (df_totale["Squadra 2"] == choix)].sort_values(by="Orario")
                 filtro = filtro[["Orario", "Campo", "Girone", "Squadra 1", "Squadra 2", "Risultato"]]
                 
                 config_colonne_ricerca = config_colonne_campi.copy()
