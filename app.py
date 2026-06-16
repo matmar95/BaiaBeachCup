@@ -18,52 +18,93 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Ottimizzazione Mobile, Centratura e FIX Sfondi Iframe
+# 2. CSS Blindato: Ottimizzazione Mobile, Centratura Totale e Spazi Compatti
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
     .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
-    /* --- FIX CENTRATURA IMMAGINE NATIVA STREAMLIT --- */
-    [data-testid="stImage"] {
-        display: flex;
-        justify-content: center; /* Centra orizzontalmente il logo */
-        align-items: center;
-        margin-top: 10px; 
-        margin-bottom: -15px !important; /* Riduce lo spazio tra logo e titolo */
-    }
-    
-    [data-testid="stImage"] img {
-        width: 70px !important; /* Dimensione logo più grandicella e giusta */
-        height: auto !important;
+    .main .block-container {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 
-    /* --- FIX CENTRATURA E SPAZI TITOLI --- */
+    /* --- CONTENITORE UNICO PER LOGO E TITOLI CENTRATI --- */
+    .header-completo-centrato {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+        margin-top: 5px;
+        margin-bottom: 2px;
+    }
+    
+    /* Logo un pelo più grande (65px) e centrato */
+    .logo-centrato-img {
+        width: 65px !important;
+        height: auto !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* Titolo Giallo senza margini extra */
     .titolo-giallo { 
         color: #fbb03f !important; 
+        font-family: 'Poppins', sans-serif;
         font-size: 1.6rem !important; 
         font-weight: 700; 
         margin: 0 !important; 
         padding: 0 !important; 
-        text-align: center !important; /* Forza il centro */
+        line-height: 1.1 !important;
         white-space: nowrap; 
     }
     
+    /* Sottotitolo Azzurrino appiccicato al titolo */
     .sottotitolo-azzurro { 
         color: #7dcab2 !important; 
+        font-family: 'Poppins', sans-serif;
         font-size: 1.1rem !important; 
         font-weight: 600; 
-        margin: 0 !important; 
+        margin: 2px 0 0 0 !important; 
         padding: 0 !important; 
-        text-align: center !important; /* Forza il centro */
+        line-height: 1.1 !important;
     }
 
-    /* Refresh e Tabs (mantieni il tuo stile esistente qui sotto) */
-    .refresh-text { color: #aaaaaa; font-size: 13px; text-align: center; margin-bottom: 0.8rem !important; margin-top: 15px; }
-    .stTabs [data-baseweb="tab"] { font-size: 15px !important; font-weight: bold !important; color: #aaaaaa !important; }
-    .stTabs [aria-selected="true"] { color: #fbb03f !important; border-bottom-color: #fbb03f !important; }
+    /* Testo Ultimo Refresh Centrato */
+    .refresh-text { 
+        color: #aaaaaa; 
+        font-size: 13px; 
+        font-family: 'Poppins', sans-serif;
+        text-align: center; 
+        margin-bottom: 0.8rem !important; 
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    /* --- COSTRUTTORE DI TAB PERFETTAMENTE CENTRATO --- */
+    .stTabs [data-baseweb="tab-list"] { 
+        justify-content: center !important; 
+        display: flex !important;
+        gap: 8px;
+        width: 100% !important;
+    }
 
-    /* Fix Iframe (mantieni il tuo stile esistente) */
+    .stTabs [data-baseweb="tab"] { 
+        font-size: 15px !important; 
+        font-weight: bold !important; 
+        color: #aaaaaa !important; 
+        padding: 8px 10px !important; 
+    }
+
+    .stTabs [aria-selected="true"] { 
+        color: #fbb03f !important; 
+        border-bottom-color: #fbb03f !important; 
+    }
+
+    /* Fix Iframe e tabelle */
     [data-testid="stHtml"] { background-color: #0d3c31 !important; border-radius: 12px !important; }
     [data-testid="stHtml"] iframe { background-color: #0d3c31 !important; filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1); zoom: 0.85; width: 118% !important; height: 860px !important; }
     </style>
@@ -71,8 +112,7 @@ st.markdown("""
 
 # Parametri Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
-# GID presi direttamente dai link condivisi per l'htmlembed
-GID_GIRONI_DATI = "1130118483" # Il foglio da cui pescare i dati CSV
+GID_GIRONI_DATI = "1130118483"
 GID_TABELLONE = "378239650"    
 
 @st.cache_data(ttl=5)
@@ -85,18 +125,29 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING HEADER CENTRATO ---
-logo_path = "logo.png"
-
-# Stampa il logo (se esiste) che verrà centrato dal CSS
+# --- PREPARAZIONE E RENDERING DELL'HEADER UNIFICATO ---
+encoded_logo = ""
 if os.path.exists(logo_path):
-    st.image(logo_path)
+    import base64
+    with open(logo_path, "rb") as image_file:
+        encoded_logo = base64.b64encode(image_file.read()).decode()
 
-# Stampa i titoli centrati, senza div contenitori
-st.markdown('''
-    <h1 class="titolo-giallo">Baia Beach Cup</h1>
-    <h2 class="sottotitolo-azzurro">2x2 Maschile</h2>
-''', unsafe_allow_html=True)
+if encoded_logo:
+    # Stampa tutto unito: Logo, Titolo e Sottotitolo nello stesso blocco HTML
+    st.markdown(f"""
+        <div class="header-completo-centrato">
+            <img src="data:image/png;base64,{encoded_logo}" class="logo-centrato-img">
+            <h1 class="titolo-giallo">Baia Beach Cup</h1>
+            <h2 class="sottotitolo-azzurro">2x2 Maschile</h2>
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <div class="header-completo-centrato">
+            <h1 class="titolo-giallo">Baia Beach Cup</h1>
+            <h2 class="sottotitolo-azzurro">2x2 Maschile</h2>
+        </div>
+    """, unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
 config_colonne_campi = {
