@@ -22,132 +22,24 @@ else:
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
+    .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
-    .main .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-    
-    [data-testid="stVerticalBlock"] > div:first-child {
-        margin-top: 0rem !important;
-        padding-top: 0rem !important;
-    }
-    
-    .stApp { background-color: #0d3c31; color: #ffffff; }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Contenitore Logo Centrato per Mobile */
-    .logo-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 0.4rem !important;
-        margin-bottom: 0.4rem !important;
-        width: 100%;
-        background-color: transparent !important;
-    }
-    
-    /* Logo rimpicciolito di un ulteriore 50% (da 75px a 38px) */
-    .logo-grande {
-        max-width: 38px; 
-        height: auto;
-        display: block;
-    }
-    
-    /* Configurazione Titolo Giallo, Centrato e su una sola riga */
-    h2 {
-        color: #fbb03f !important;
-        font-family: 'Poppins', sans-serif;
-        font-weight: 600;
-        text-align: center;
-        margin-top: 0rem !important;
-        margin-bottom: 0.6rem !important;
-        font-size: 1.4rem; 
-        white-space: nowrap; 
-        width: 100%;
-    }
+    /* Header Centrato */
+    .header-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 15px; }
+    .logo-piccolo { width: 45px !important; margin-bottom: 5px; }
+    .titolo-giallo { color: #fbb03f !important; font-size: 1.5rem !important; font-weight: 700; margin: 0 !important; white-space: nowrap; }
+    .sottotitolo-azzurro { color: #7dcab2 !important; font-size: 1.1rem !important; font-weight: 600; margin: 0 !important; }
 
-    /* Testo Ultimo Refresh Centrato */
-    .refresh-text {
-        color: #aaaaaa;
-        font-size: 13px;
-        font-family: 'Poppins', sans-serif;
-        text-align: center;
-        margin-bottom: 0.8rem !important;
-        width: 100%;
-    }
-    
-    h3, h4 { color: #7dcab2 !important; font-family: 'Poppins', sans-serif; margin-bottom: 0.4rem !important;}
-    
-    /* --- STILE TAB STREAMLIT --- */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        justify-content: space-between;
-    }
+    /* Refresh e Tabs (mantieni il tuo stile esistente qui sotto) */
+    .refresh-text { color: #aaaaaa; font-size: 13px; text-align: center; margin-bottom: 0.8rem !important; }
+    .stTabs [data-baseweb="tab"] { font-size: 15px !important; font-weight: bold !important; color: #aaaaaa !important; }
+    .stTabs [aria-selected="true"] { color: #fbb03f !important; border-bottom-color: #fbb03f !important; }
 
-    .stTabs [data-baseweb="tab"] {
-        font-size: 15px !important;
-        font-weight: bold !important;
-        color: #aaaaaa !important;
-        padding: 8px 10px !important;
-    }
-
-    .stTabs [aria-selected="true"] {
-        color: #fbb03f !important;
-        border-bottom-color: #fbb03f !important;
-    }
-    
-    /* Stile per gli Expander */
-    .stDecoration { background-color: #fbb03f !important; }
-    
-    /* --- EMISSIONE FIX SFONDO BIANCO E SPAZI IFRAME --- */
-    [data-testid="stHtml"] {
-        width: 100% !important;
-        overflow-x: auto !important; 
-        overflow-y: hidden !important; 
-        border-radius: 12px !important;            
-        border: none !important; 
-        background-color: #0d3c31 !important;      
-        padding: 4px !important;
-        height: auto !important;
-        scrollbar-width: none;            
-        -ms-overflow-style: none;         
-    }
-    
-    /* Forza lo sfondo scuro su tutto il blocco nativo Streamlit per evitare il bianco allo scroll */
-    .element-container, .element-container:has(iframe), [data-testid="stHtml"] div {
-        border-radius: 12px !important;
-        overflow: hidden !important;
-        background-color: #0d3c31 !important;
-    }
-
-    [data-testid="stHtml"]::-webkit-scrollbar {
-        display: none !important;
-        width: 0px !important;
-        height: 0px !important;
-        background: transparent !important;
-    }
-
-    /* Fix definitivo per l'adattamento visivo ed eliminazione bande bianche */
-    [data-testid="stHtml"] iframe {
-        display: block;
-        vertical-align: bottom;
-        border: none !important; 
-        background-color: #0d3c31 !important;
-        filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1);
-        
-        /* Ottimizzazione zoom senza sgranare o lasciare vuoti */
-        zoom: 0.85; 
-        -moz-transform: scale(0.85);
-        -moz-transform-origin: 0 0;
-        width: 118% !important; 
-        height: 860px !important; 
-    }
+    /* Fix Iframe (mantieni il tuo stile esistente) */
+    [data-testid="stHtml"] { background-color: #0d3c31 !important; border-radius: 12px !important; }
+    [data-testid="stHtml"] iframe { background-color: #0d3c31 !important; filter: invert(0.92) hue-rotate(110deg) brightness(0.9) contrast(1.1); zoom: 0.85; width: 118% !important; height: 860px !important; }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Parametri Sheets
 SHEET_ID = "1nCJXDT4HQiHKalAiUr__aYi9szcGCyFL"
@@ -165,22 +57,16 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- RENDERING LOGO SUPER COMPATTO CENTRATO ---
+# --- RENDERING HEADER CENTRATO ---
+logo_path = "logo.png"
+st.markdown('<div class="header-box">', unsafe_allow_html=True)
 if os.path.exists(logo_path):
-    import base64
-    with open(logo_path, "rb") as image_file:
-        encoded_logo = base64.b64encode(image_file.read()).decode()
-    
-    st.markdown(f"""
-        <div class="logo-container">
-            <img src="data:image/png;base64,{encoded_logo}" class="logo-grande">
-        </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("<h2 style='text-align: center;'>Baia Beach Cup 2026</h2>", unsafe_allow_html=True)
-
-# --- SOTTOTITOLO SU UNA RIGA GIALLO ---
-st.markdown("<h2>Baia Beach Cup - 2x2 Maschile</h2>", unsafe_allow_html=True)
+    st.image(logo_path, width=45) 
+st.markdown('''
+    <h1 class="titolo-giallo">Baia Beach Cup</h1>
+    <h2 class="sottotitolo-azzurro">2x2 Maschile</h2>
+    </div>
+''', unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
 config_colonne_campi = {
