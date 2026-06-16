@@ -7,7 +7,7 @@ import zoneinfo
 import os
 from PIL import Image
 
-# 1. Configurazione Pagina (Caricamento Logo come Favicon se presente)
+# 1. Configurazione Pagina
 logo_path = "logo.png"
 if os.path.exists(logo_path):
     try:
@@ -18,20 +18,20 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS Blindato: Ottimizzazione Mobile, Centratura Totale e Spazi Compatti
+# 2. CSS BLINDATO - Ricalibrato con proporzioni auree da Designer
 st.markdown("""
     <style>
     header { display: none !important; height: 0px !important; }
     .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
     .main .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 0.8rem !important;
         padding-bottom: 0rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
 
-    /* --- CONTENITORE UNICO PER LOGO E TITOLI CENTRATI --- */
+    /* --- BRANDING BLOCK CENTRATO --- */
     .header-completo-centrato {
         display: flex;
         flex-direction: column;
@@ -39,52 +39,55 @@ st.markdown("""
         justify-content: center;
         text-align: center;
         width: 100%;
-        margin-top: 5px;
-        margin-bottom: 2px;
+        margin-top: 10px;
+        margin-bottom: 5px;
     }
     
-    /* Logo un pelo più grande (65px) e centrato */
+    /* Logo ingrandito a 100px per rendere leggibili i dettagli interni e il testo nel cerchio */
     .logo-centrato-img {
-        width: 65px !important;
+        width: 100px !important;
         height: auto !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 12px !important; /* Più spazio (respiro) prima del titolo */
+        filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.25)); /* Lo stacca dallo sfondo verde */
     }
 
-    /* Titolo Giallo senza margini extra */
+    /* Titolo Giallo leggermente ritoccato nella dimensione per armonizzarsi con il logo grande */
     .titolo-giallo { 
         color: #fbb03f !important; 
-        font-family: 'Poppins', sans-serif;
-        font-size: 1.6rem !important; 
+        font-family: 'Poppins', 'Helvetica Neue', sans-serif;
+        font-size: 1.75rem !important; 
         font-weight: 700; 
         margin: 0 !important; 
         padding: 0 !important; 
         line-height: 1.1 !important;
+        letter-spacing: 0.5px;
         white-space: nowrap; 
     }
     
-    /* Sottotitolo Azzurrino appiccicato al titolo */
+    /* Sottotitolo Azzurrino */
     .sottotitolo-azzurro { 
         color: #7dcab2 !important; 
-        font-family: 'Poppins', sans-serif;
-        font-size: 1.1rem !important; 
+        font-family: 'Poppins', 'Helvetica Neue', sans-serif;
+        font-size: 1.15rem !important; 
         font-weight: 600; 
-        margin: 2px 0 0 0 !important; 
+        margin: 4px 0 0 0 !important; 
         padding: 0 !important; 
         line-height: 1.1 !important;
+        letter-spacing: 0.5px;
     }
 
     /* Testo Ultimo Refresh Centrato */
     .refresh-text { 
         color: #aaaaaa; 
         font-size: 13px; 
-        font-family: 'Poppins', sans-serif;
+        font-family: sans-serif;
         text-align: center; 
-        margin-bottom: 0.8rem !important; 
-        margin-top: 10px;
+        margin-bottom: 1rem !important; 
+        margin-top: 12px;
         width: 100%;
     }
     
-    /* --- COSTRUTTORE DI TAB PERFETTAMENTE CENTRATO --- */
+    /* --- TAB CENTRATI --- */
     .stTabs [data-baseweb="tab-list"] { 
         justify-content: center !important; 
         display: flex !important;
@@ -125,7 +128,7 @@ def carica_dati_csv(nome_foglio):
     except:
         return pd.DataFrame()
 
-# --- PREPARAZIONE E RENDERING DELL'HEADER UNIFICATO ---
+# --- RENDERING DELL'HEADER UNIFICATO (PROPORZIONI RICALIBRATE) ---
 encoded_logo = ""
 if os.path.exists(logo_path):
     import base64
@@ -133,7 +136,6 @@ if os.path.exists(logo_path):
         encoded_logo = base64.b64encode(image_file.read()).decode()
 
 if encoded_logo:
-    # Stampa tutto unito: Logo, Titolo e Sottotitolo nello stesso blocco HTML
     st.markdown(f"""
         <div class="header-completo-centrato">
             <img src="data:image/png;base64,{encoded_logo}" class="logo-centrato-img">
