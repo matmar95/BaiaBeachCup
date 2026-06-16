@@ -18,20 +18,33 @@ if os.path.exists(logo_path):
 else:
     st.set_page_config(page_title="Baia Beach Cup 2026", page_icon="🏐", layout="wide")
 
-# 2. CSS BLINDATO - Ottimizzazione Spazi Alti per Mobile e Desktop
+# 2. CSS AGGRESSIVO - Forzatura selettori nativi Streamlit 2026
 st.markdown("""
     <style>
-    /* Rimozione Header Nativo di Streamlit (tutte le possibili varianti classiche) */
-    header, [data-testid="stHeader"] { display: none !important; height: 0px !important; }
+    /* 1. Eliminazione totale e radicale dell'header superiore */
+    header, [data-testid="stHeader"] { 
+        display: none !important; 
+        height: 0px !important; 
+        opacity: 0 !important;
+    }
+    
     .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
-    /* --- AZZERAMENTO PADDING DI STREAMLIT --- */
-    .main .block-container {
-        padding-top: 0px !important;      /* Elimina lo spazio vuoto superiore nativo */
-        margin-top: 0px !important;       /* Resetta eventuali margini */
+    /* 2. Azzeramento del container moderno di Streamlit (Sia Desktop che Mobile) */
+    .main .block-container, 
+    [data-testid="stAppViewBlockContainer"],
+    .stAppViewMain > div:first-child {
+        padding-top: 0px !important;
+        margin-top: 0px !important;
         padding-bottom: 0rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
+    }
+
+    /* 3. Azzeramento dello spazio del primissimo blocco di rendering di Streamlit */
+    [data-testid="stVerticalBlock"] > div:first-child {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
     }
 
     /* --- BRANDING BLOCK CENTRATO --- */
@@ -42,12 +55,13 @@ st.markdown("""
         justify-content: center;
         text-align: center;
         width: 100%;
-        margin-top: -10px !important;     /* Margine negativo controllato per tirare su il logo su mobile */
+        /* Tiriamo su il blocco per incollarlo al top dello schermo */
+        margin-top: -15px !important; 
         padding-top: 0px !important;
         margin-bottom: 8px;
     }
     
-    /* Logo a 100px con ombra morbida */
+    /* Logo ottimizzato */
     .logo-centrato-img {
         width: 100px !important;
         height: auto !important;
