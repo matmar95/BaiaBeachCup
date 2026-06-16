@@ -24,14 +24,42 @@ st.markdown("""
     header { display: none !important; height: 0px !important; }
     .stApp { background-color: #0d3c31 !important; color: #ffffff !important; }
     
-    /* Header Centrato */
-    .header-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 15px; }
-    .logo-piccolo { width: 45px !important; margin-bottom: 5px; }
-    .titolo-giallo { color: #fbb03f !important; font-size: 1.5rem !important; font-weight: 700; margin: 0 !important; white-space: nowrap; }
-    .sottotitolo-azzurro { color: #7dcab2 !important; font-size: 1.1rem !important; font-weight: 600; margin: 0 !important; }
+    /* --- FIX CENTRATURA IMMAGINE NATIVA STREAMLIT --- */
+    [data-testid="stImage"] {
+        display: flex;
+        justify-content: center; /* Centra orizzontalmente il logo */
+        align-items: center;
+        margin-top: 10px; 
+        margin-bottom: -15px !important; /* Riduce lo spazio tra logo e titolo */
+    }
+    
+    [data-testid="stImage"] img {
+        width: 70px !important; /* Dimensione logo più grandicella e giusta */
+        height: auto !important;
+    }
+
+    /* --- FIX CENTRATURA E SPAZI TITOLI --- */
+    .titolo-giallo { 
+        color: #fbb03f !important; 
+        font-size: 1.6rem !important; 
+        font-weight: 700; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        text-align: center !important; /* Forza il centro */
+        white-space: nowrap; 
+    }
+    
+    .sottotitolo-azzurro { 
+        color: #7dcab2 !important; 
+        font-size: 1.1rem !important; 
+        font-weight: 600; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        text-align: center !important; /* Forza il centro */
+    }
 
     /* Refresh e Tabs (mantieni il tuo stile esistente qui sotto) */
-    .refresh-text { color: #aaaaaa; font-size: 13px; text-align: center; margin-bottom: 0.8rem !important; }
+    .refresh-text { color: #aaaaaa; font-size: 13px; text-align: center; margin-bottom: 0.8rem !important; margin-top: 15px; }
     .stTabs [data-baseweb="tab"] { font-size: 15px !important; font-weight: bold !important; color: #aaaaaa !important; }
     .stTabs [aria-selected="true"] { color: #fbb03f !important; border-bottom-color: #fbb03f !important; }
 
@@ -59,13 +87,15 @@ def carica_dati_csv(nome_foglio):
 
 # --- RENDERING HEADER CENTRATO ---
 logo_path = "logo.png"
-st.markdown('<div class="header-box">', unsafe_allow_html=True)
+
+# Stampa il logo (se esiste) che verrà centrato dal CSS
 if os.path.exists(logo_path):
-    st.image(logo_path, width=45) 
+    st.image(logo_path)
+
+# Stampa i titoli centrati, senza div contenitori
 st.markdown('''
     <h1 class="titolo-giallo">Baia Beach Cup</h1>
     <h2 class="sottotitolo-azzurro">2x2 Maschile</h2>
-    </div>
 ''', unsafe_allow_html=True)
 
 # --- CONFIGURAZIONE COLONNE ---
